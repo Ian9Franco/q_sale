@@ -62,7 +62,7 @@ const playTacticalSound = (type: 'ping' | 'ready' | 'squad_full') => {
       });
     }
   } catch {
-    // Audio might be blocked before first interaction
+    // Audio might be blocked before user interaction
   }
 };
 
@@ -329,7 +329,7 @@ export default function HomePage() {
     const id = newPlayerName.trim().toLowerCase().replace(/\s+/g, '_') + '_' + Math.floor(Math.random() * 1000);
     const newPlayerData: PlayerStatus = {
       id,
-      name: newPlayerName.trim(),
+      name: newPlayerName.trim().toUpperCase(),
       avatar: newPlayerAvatar,
       color: ['#ff4757', '#2ed573', '#1e90ff', '#ffa502', '#9b59b6', '#00d2d3'][Math.floor(Math.random() * 6)],
       availability: 'now',
@@ -541,7 +541,6 @@ export default function HomePage() {
         border: isSquadFull ? '2px solid #00e676' : '1px solid rgba(255, 159, 28, 0.3)',
         boxShadow: isSquadFull ? '0 0 35px rgba(0, 230, 118, 0.25)' : '0 10px 30px rgba(0, 0, 0, 0.5)',
       }}>
-        {/* Decorative Grid Backdrop */}
         <div style={{
           position: 'absolute',
           top: 0,
@@ -578,12 +577,12 @@ export default function HomePage() {
               {isSquadFull
                 ? '¡Hay 5 jugadores listos! Métanse a Discord para rankear ya.'
                 : readyCount === 0
-                ? 'Nadie está listo ahora mismo. Marcá tu disponibilidad abajo para notificar al grupo.'
+                ? 'Nadie está listo ahora mismo. Marcá tu disponibilidad abajo para convocar al squad.'
                 : `Faltan ${maxSquad - readyCount} jugadores para armar el equipo de 5.`}
             </p>
           </div>
 
-          {/* Quick Action Buttons */}
+          {/* Quick Action Button */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             <button
               onClick={handleQuickReadyAndDiscord}
@@ -596,7 +595,7 @@ export default function HomePage() {
                 transform: activePlayer?.availability === 'now' && activePlayer?.discordStatus === 'in_voice' ? 'scale(0.98)' : 'scale(1)',
               }}
             >
-              📢 ¡ESTOY EN DISCORD Y ENTRANDO A R6! (Avisar a Todos)
+              📢 ¡ESTOY EN DISCORD Y ENTRANDO A R6! (Avisar al Squad)
             </button>
           </div>
         </div>
@@ -917,8 +916,10 @@ export default function HomePage() {
                   value={draftGameId}
                   onChange={(e) => setDraftGameId(e.target.value as GameId)}
                 >
-                  {GAMES_CATALOG.map(g => (
-                    <option key={g.id} value={g.id}>{g.shortName}</option>
+                  {GAMES_CATALOG.filter(g => g.isSelectable).map(g => (
+                    <option key={g.id} value={g.id}>
+                      {g.shortName} {g.statusBadge === 'unclassified' ? '(Desclasificado)' : ''}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -950,7 +951,7 @@ export default function HomePage() {
         <div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
             <h3 style={{ fontSize: '1.1rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.5px', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
-              👥 Estado de los Amigos
+              👥 Estado del Squad
             </h3>
             <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
               {players.length} amigos en el radar
@@ -1155,12 +1156,21 @@ export default function HomePage() {
                 style={{
                   padding: '16px',
                   borderRadius: '14px',
-                  border: isCurrent ? '2px solid var(--accent-r6)' : '1px solid rgba(255, 255, 255, 0.08)',
-                  background: isCurrent ? 'linear-gradient(145deg, rgba(255, 159, 28, 0.1), rgba(15, 23, 42, 0.8))' : 'rgba(15, 23, 42, 0.6)',
+                  border: isCurrent
+                    ? '2px solid var(--accent-r6)'
+                    : g.statusBadge === 'unclassified'
+                    ? '1px solid rgba(231, 76, 60, 0.4)'
+                    : '1px solid rgba(255, 255, 255, 0.08)',
+                  background: isCurrent
+                    ? 'linear-gradient(145deg, rgba(255, 159, 28, 0.1), rgba(15, 23, 42, 0.8))'
+                    : g.statusBadge === 'unclassified'
+                    ? 'linear-gradient(145deg, rgba(231, 76, 60, 0.08), rgba(15, 23, 42, 0.8))'
+                    : 'rgba(15, 23, 42, 0.6)',
                   display: 'flex',
                   flexDirection: 'column',
                   justifyContent: 'space-between',
                   gap: '12px',
+                  opacity: g.statusBadge === 'coming_soon' ? 0.75 : 1,
                 }}
               >
                 <div>
@@ -1168,26 +1178,54 @@ export default function HomePage() {
                     <h4 style={{ fontSize: '1.05rem', fontWeight: 900, color: '#fff', margin: 0 }}>
                       {g.name}
                     </h4>
-                    {isCurrent && (
-                      <span style={{ fontSize: '0.7rem', padding: '2px 8px', borderRadius: '4px', background: 'var(--accent-r6)', color: '#000', fontWeight: 900 }}>
-                        ACTIVO
-                      </span>
-                    )}
+                    
+                    {/* Badge */}
+                    <span style={{
+                      fontSize: '0.68rem',
+                      padding: '2px 8px',
+                      borderRadius: '4px',
+                      fontWeight: 900,
+                      letterSpacing: '0.5px',
+                      background:
+                        g.statusBadge === 'active'
+                          ? 'var(--accent-r6)'
+                          : g.statusBadge === 'unclassified'
+                          ? 'rgba(231, 76, 60, 0.25)'
+                          : 'rgba(168, 85, 247, 0.25)',
+                      color:
+                        g.statusBadge === 'active'
+                          ? '#000'
+                          : g.statusBadge === 'unclassified'
+                          ? '#ff6b6b'
+                          : '#c084fc',
+                      border:
+                        g.statusBadge === 'unclassified'
+                          ? '1px solid #e74c3c'
+                          : g.statusBadge === 'coming_soon'
+                          ? '1px solid #a855f7'
+                          : 'none',
+                    }}>
+                      {g.badgeLabel}
+                    </span>
                   </div>
+
                   <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: '0 0 10px 0' }}>
                     {g.tagline}
                   </p>
+
                   <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                     <span style={{ fontSize: '0.7rem', padding: '3px 8px', borderRadius: '4px', background: 'rgba(255, 255, 255, 0.06)', color: 'var(--text-muted)' }}>
                       Escuadra: {g.maxSquad} personas
                     </span>
-                    <span style={{ fontSize: '0.7rem', padding: '3px 8px', borderRadius: '4px', background: 'rgba(0, 230, 118, 0.15)', color: '#00e676', fontWeight: 700 }}>
-                      {playersForGame} listos ahora
-                    </span>
+                    {g.isSelectable && (
+                      <span style={{ fontSize: '0.7rem', padding: '3px 8px', borderRadius: '4px', background: 'rgba(0, 230, 118, 0.15)', color: '#00e676', fontWeight: 700 }}>
+                        {playersForGame} listos ahora
+                      </span>
+                    )}
                   </div>
                 </div>
 
-                {!isCurrent && (
+                {g.isSelectable && !isCurrent && (
                   <button
                     onClick={async () => {
                       try {
@@ -1207,6 +1245,12 @@ export default function HomePage() {
                   >
                     Seleccionar como juego del grupo
                   </button>
+                )}
+
+                {!g.isSelectable && (
+                  <div style={{ textAlign: 'center', fontSize: '0.75rem', color: 'var(--text-dim)', padding: '6px', background: 'rgba(255, 255, 255, 0.03)', borderRadius: '6px' }}>
+                    ⏳ Próximamente disponible
+                  </div>
                 )}
               </div>
             );
@@ -1315,7 +1359,7 @@ export default function HomePage() {
                 id={newPlayerNameInputId}
                 type="text"
                 required
-                placeholder="ej: Pedro, Juan, etc."
+                placeholder="ej: PEDRO, JUAN, etc."
                 value={newPlayerName}
                 onChange={(e) => setNewPlayerName(e.target.value)}
                 autoFocus
