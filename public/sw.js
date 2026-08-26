@@ -31,40 +31,32 @@ self.addEventListener('push', (event) => {
     body: data.body,
     icon: data.icon || '/icon.svg',
     badge: data.badge || '/icon.svg',
-    vibrate: [200, 100, 200, 100, 200],
     data: {
       url: data.url || '/',
       dateOfArrival: Date.now(),
     },
-    actions: [
-      { action: 'open', title: '🎮 Abrir Squad' },
-      { action: 'close', title: 'Cerrar' }
-    ],
     tag: 'q-sale-alert',
-    renotify: true,
   };
 
   event.waitUntil(
-    self.registration.showNotification(data.title, options)
+    self.registration.showNotification(data.title, options).catch((err) => {
+      console.error('Error showing notification in SW:', err);
+    })
   );
 });
 
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
 
-  if (event.action === 'close') return;
-
   const urlToOpen = event.notification.data?.url || '/';
 
   event.waitUntil(
     self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windowClients) => {
-      // If a tab is already open, focus it
       for (const client of windowClients) {
         if (client.url.includes(self.location.origin) && 'focus' in client) {
           return client.focus();
         }
       }
-      // Otherwise open a new window
       if (self.clients.openWindow) {
         return self.clients.openWindow(urlToOpen);
       }

@@ -29,6 +29,8 @@ export async function broadcastPushNotification(payload: {
   senderUserId?: string;
 }) {
   const subscriptions = await getDbSubscriptions();
+  console.log(`[PUSH] Found ${subscriptions.length} subscriptions in DB to notify`);
+
   const stringPayload = JSON.stringify({
     title: payload.title,
     body: payload.body,
@@ -37,12 +39,8 @@ export async function broadcastPushNotification(payload: {
   });
 
   const sendPromises = subscriptions.map(async (sub) => {
-    // Optionally skip sending to the sender themselves
-    if (payload.senderUserId && sub.userId === payload.senderUserId) {
-      return;
-    }
-
     try {
+      console.log(`[PUSH] Sending to endpoint: ${sub.endpoint.substring(0, 40)}...`);
       await webpush.sendNotification(
         {
           endpoint: sub.endpoint,
@@ -50,10 +48,12 @@ export async function broadcastPushNotification(payload: {
         },
         stringPayload
       );
+      console.log(`[PUSH] Successfully sent notification to endpoint.`);
     } catch (err: unknown) {
+      console.error('[PUSH] Failed sending push notification:', err);
       const statusCode = (err as { statusCode?: number }).statusCode;
-      // If subscription expired or invalid (404 / 410 Gone), remove it
       if (statusCode === 404 || statusCode === 410) {
+        console.log('[PUSH] Removing expired subscription endpoint:', sub.endpoint);
         await removeDbSubscription(sub.endpoint);
       }
     }
