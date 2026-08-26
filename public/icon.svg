@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0a0e17"/>
+      <stop offset="100%" stop-color="#161f30"/>
+    </linearGradient>
+    <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ff9f1c"/>
+      <stop offset="100%" stop-color="#ff3838"/>
+    </linearGradient>
+    <linearGradient id="glowGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00f0ff"/>
+      <stop offset="100%" stop-color="#5865f2"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Background with rounded corners -->
+  <rect width="512" height="512" rx="110" fill="url(#bgGrad)"/>
+  
+  <!-- Outer tactical border -->
+  <rect x="24" y="24" width="464" height="464" rx="90" fill="none" stroke="url(#accentGrad)" stroke-width="6" opacity="0.6"/>
+  
+  <!-- Tactical corner marks -->
+  <path d="M 60 120 L 60 60 L 120 60" fill="none" stroke="#ff9f1c" stroke-width="8" stroke-linecap="round"/>
+  <path d="M 452 120 L 452 60 L 392 60" fill="none" stroke="#ff9f1c" stroke-width="8" stroke-linecap="round"/>
+  <path d="M 60 392 L 60 452 L 120 452" fill="none" stroke="#ff9f1c" stroke-width="8" stroke-linecap="round"/>
+  <path d="M 452 392 L 452 452 L 392 452" fill="none" stroke="#ff9f1c" stroke-width="8" stroke-linecap="round"/>
+
+  <!-- Tactical "Q" Icon -->
+  <circle cx="240" cy="230" r="110" fill="none" stroke="url(#accentGrad)" stroke-width="26" stroke-linecap="round"/>
+  
+  <!-- Crosshair elements in Q -->
+  <line x1="240" y1="85" x2="240" y2="135" stroke="#00f0ff" stroke-width="8" stroke-linecap="round"/>
+  <line x1="240" y1="325" x2="240" y2="375" stroke="#00f0ff" stroke-width="8" stroke-linecap="round"/>
+  <line x1="95" y1="230" x2="145" y2="230" stroke="#00f0ff" stroke-width="8" stroke-linecap="round"/>
+  <line x1="335" y1="230" x2="385" y2="230" stroke="#00f0ff" stroke-width="8" stroke-linecap="round"/>
+  
+  <!-- Q Slash Tail (Tactical Blade/Lightning) -->
+  <path d="M 310 300 L 400 400 L 430 380 L 330 280 Z" fill="url(#accentGrad)"/>
+  
+  <!-- 5 dots for Squad 5/5 -->
+  <circle cx="160" cy="420" r="12" fill="#00e676"/>
+  <circle cx="205" cy="420" r="12" fill="#00e676"/>
+  <circle cx="250" cy="420" r="12" fill="#00e676"/>
+  <circle cx="295" cy="420" r="12" fill="#00e676"/>
+  <circle cx="340" cy="420" r="12" fill="#ff9f1c"/>
+</svg>

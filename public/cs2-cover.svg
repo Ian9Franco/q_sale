@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400" width="800" height="400">
+  <defs>
+    <linearGradient id="csbg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#1e293b"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="400" fill="url(#csbg)"/>
+  <text x="400" y="200" font-family="'Segoe UI', Roboto, sans-serif" font-size="64" font-weight="900" fill="#de9b35" text-anchor="middle">COUNTER-STRIKE 2</text>
+  <text x="400" y="250" font-family="'Segoe UI', Roboto, sans-serif" font-size="20" font-weight="600" fill="#94a3b8" text-anchor="middle">5v5 PREMIER COMPETITIVE</text>
+</svg>

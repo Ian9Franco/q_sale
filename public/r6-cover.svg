@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400" width="800" height="400">
+  <defs>
+    <linearGradient id="r6bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0b111e"/>
+      <stop offset="50%" stop-color="#141c2b"/>
+      <stop offset="100%" stop-color="#1f2937"/>
+    </linearGradient>
+    <linearGradient id="amberGlow" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ff9f1c"/>
+      <stop offset="100%" stop-color="#ff5252"/>
+    </linearGradient>
+    <pattern id="tacticalGrid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+    </pattern>
+  </defs>
+
+  <!-- Background -->
+  <rect width="800" height="400" fill="url(#r6bg)"/>
+  <rect width="800" height="400" fill="url(#tacticalGrid)"/>
+
+  <!-- High-contrast diagonal cuts -->
+  <path d="M 0 350 L 300 400 L 0 400 Z" fill="#ff9f1c" opacity="0.15"/>
+  <path d="M 500 0 L 800 0 L 800 150 Z" fill="#00f0ff" opacity="0.08"/>
+
+  <!-- Iconic 6 Badge -->
+  <g transform="translate(90, 80)">
+    <!-- Shield / Badge backdrop -->
+    <path d="M 40 10 L 180 10 L 210 160 L 110 240 L 10 160 Z" fill="#111827" stroke="url(#amberGlow)" stroke-width="6"/>
+    <!-- The "6" with Operator Crossbars -->
+    <text x="110" y="165" font-family="Arial, sans-serif" font-size="140" font-weight="900" fill="#ffffff" text-anchor="middle" letter-spacing="-4">6</text>
+    <rect x="75" y="115" width="70" height="12" fill="#ff9f1c"/>
+  </g>
+
+  <!-- Title & Info -->
+  <g transform="translate(340, 130)">
+    <text x="0" y="0" font-family="'Segoe UI', Roboto, sans-serif" font-size="20" font-weight="800" fill="#ff9f1c" letter-spacing="6">TOM CLANCY'S</text>
+    <text x="0" y="55" font-family="'Segoe UI', Roboto, sans-serif" font-size="52" font-weight="900" fill="#ffffff" letter-spacing="2">RAINBOW SIX</text>
+    <text x="0" y="110" font-family="'Segoe UI', Roboto, sans-serif" font-size="44" font-weight="900" fill="#ff9f1c" letter-spacing="8">SIEGE</text>
+    <text x="0" y="150" font-family="'Segoe UI', Roboto, sans-serif" font-size="16" font-weight="600" fill="#94a3b8" letter-spacing="1">TACTICAL 5v5 SQUAD SHOOTER</text>
+  </g>
+
+  <!-- Squad 5 Slots Indicator -->
+  <g transform="translate(340, 310)">
+    <rect x="0" y="0" width="70" height="28" rx="6" fill="rgba(255,159,28,0.2)" stroke="#ff9f1c" stroke-width="1.5"/>
+    <text x="35" y="19" font-family="sans-serif" font-size="13" font-weight="700" fill="#ff9f1c" text-anchor="middle">5 SLOTS</text>
+
+    <rect x="80" y="0" width="95" height="28" rx="6" fill="rgba(0,240,255,0.15)" stroke="#00f0ff" stroke-width="1.5"/>
+    <text x="127" y="19" font-family="sans-serif" font-size="13" font-weight="700" fill="#00f0ff" text-anchor="middle">RANKED 🏆</text>
+
+    <rect x="185" y="0" width="110" height="28" rx="6" fill="rgba(88,101,242,0.2)" stroke="#5865f2" stroke-width="1.5"/>
+    <text x="240" y="19" font-family="sans-serif" font-size="13" font-weight="700" fill="#5865f2" text-anchor="middle">DISCORD VOZ</text>
+  </g>
+</svg>

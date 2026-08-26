@@ -1,0 +1,29 @@
+{
+  "name": "Q-Sale? - Coordinador de Squad",
+  "short_name": "Q-Sale",
+  "description": "App para avisar a tus amigos cuándo sale jugar, coordinar Rainbow Six Siege y Discord",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0e17",
+  "theme_color": "#ff9f1c",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
