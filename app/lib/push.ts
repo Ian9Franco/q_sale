@@ -1,9 +1,10 @@
 import webpush from 'web-push';
-import { getDbSubscriptions, removeDbSubscription } from './redis';
+import { getDbSubscriptions, removeDbSubscription, getRedisClient } from './redis';
 
 export const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || 'BA5J0HjyMmHL-cg6U3dNV62YoZCUXizp0Gix0Iv-4Fa4smprOdmhYfFdW-TBEplQteeo8aDT94JQ4iHs8Y1lnhc';
 export const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY || 'vfxUSHcedUAC-EQcZrZg2Nmv0-1CJihwELQz16ky4Yk';
-export const VAPID_SUBJECT = process.env.VAPID_SUBJECT || 'mailto:admin@qsale.local';
+// Apple APNs requires a valid public email domain or https URL
+export const VAPID_SUBJECT = process.env.VAPID_SUBJECT || 'mailto:ianfrancodev@gmail.com';
 
 webpush.setVapidDetails(
   VAPID_SUBJECT,
@@ -29,7 +30,7 @@ export async function broadcastPushNotification(payload: {
   senderUserId?: string;
 }) {
   const subscriptions = await getDbSubscriptions();
-  console.log(`[PUSH] Found ${subscriptions.length} subscriptions in DB to notify`);
+  const logs: Array<{ endpoint: string; status: string; details?: unknown }> = [];
 
   const stringPayload = JSON.stringify({
     title: payload.title,
@@ -40,24 +41,47 @@ export async function broadcastPushNotification(payload: {
 
   const sendPromises = subscriptions.map(async (sub) => {
     try {
-      console.log(`[PUSH] Sending to endpoint: ${sub.endpoint.substring(0, 40)}...`);
-      await webpush.sendNotification(
+      const res = await webpush.sendNotification(
         {
           endpoint: sub.endpoint,
           keys: sub.keys,
         },
-        stringPayload
+        stringPayload,
+        {
+          TTL: 60 * 60 * 24, // 1 day
+          urgency: 'high',
+        }
       );
-      console.log(`[PUSH] Successfully sent notification to endpoint.`);
+      logs.push({
+        endpoint: sub.endpoint.substring(0, 40) + '...',
+        status: `Success (${res.statusCode})`,
+      });
     } catch (err: unknown) {
-      console.error('[PUSH] Failed sending push notification:', err);
-      const statusCode = (err as { statusCode?: number }).statusCode;
-      if (statusCode === 404 || statusCode === 410) {
-        console.log('[PUSH] Removing expired subscription endpoint:', sub.endpoint);
+      const pushError = err as { statusCode?: number; body?: string; message?: string };
+      logs.push({
+        endpoint: sub.endpoint.substring(0, 40) + '...',
+        status: `Error ${pushError.statusCode || 'unknown'}`,
+        details: pushError.body || pushError.message || String(err),
+      });
+
+      if (pushError.statusCode === 404 || pushError.statusCode === 410) {
         await removeDbSubscription(sub.endpoint);
       }
     }
   });
 
   await Promise.allSettled(sendPromises);
+
+  // Save last push logs to Redis for debugging
+  try {
+    const client = getRedisClient();
+    await client.set('q_sale:last_push_log', JSON.stringify({
+      timestamp: new Date().toISOString(),
+      subscriptionsFound: subscriptions.length,
+      payload,
+      logs,
+    }));
+  } catch (e) {
+    console.error('Error saving push logs to Redis:', e);
+  }
 }
