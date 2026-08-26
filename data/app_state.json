@@ -1,7 +1,7 @@
 {
   "activeGameId": "r6_siege",
   "discordInviteUrl": "https://discord.com",
-  "lastUpdated": "2026-08-26T20:12:00.000Z",
+  "lastUpdated": "2026-08-26T20:21:13.793Z",
   "players": [
     {
       "id": "ian",
@@ -13,19 +13,20 @@
       "gameId": "r6_siege",
       "gameMode": "Ranked 🏆",
       "customNote": "¡Listo para rankeds!",
-      "updatedAt": "2026-08-26T20:12:00.000Z"
+      "updatedAt": "2026-08-26T20:17:09.653Z",
+      "scheduledTime": "22:00"
     },
     {
       "id": "chango",
       "name": "CHANGO",
       "avatar": "sledge",
       "color": "#2ed573",
-      "availability": "offline",
-      "discordStatus": "offline",
+      "availability": "now",
+      "discordStatus": "in_voice",
       "gameId": "r6_siege",
       "gameMode": "Ranked 🏆",
       "customNote": "",
-      "updatedAt": "2026-08-26T20:12:00.000Z"
+      "updatedAt": "2026-08-26T20:21:13.793Z"
     },
     {
       "id": "el_mati",

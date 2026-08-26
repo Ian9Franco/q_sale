@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import { saveSubscription, removeSubscription, VAPID_PUBLIC_KEY } from '../../../lib/push';
+import { VAPID_PUBLIC_KEY } from '../../../lib/push';
+import { saveDbSubscription, removeDbSubscription } from '../../../lib/redis';
 
 export async function GET() {
   return NextResponse.json({ publicKey: VAPID_PUBLIC_KEY });
@@ -12,13 +13,13 @@ export async function POST(request: Request) {
 
     if (action === 'unsubscribe') {
       if (subscription?.endpoint) {
-        removeSubscription(subscription.endpoint);
+        await removeDbSubscription(subscription.endpoint);
       }
       return NextResponse.json({ success: true });
     }
 
     if (subscription && subscription.endpoint && subscription.keys) {
-      saveSubscription({
+      await saveDbSubscription({
         endpoint: subscription.endpoint,
         keys: {
           p256dh: subscription.keys.p256dh,

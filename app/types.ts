@@ -65,7 +65,7 @@ export const GAMES_CATALOG: GameInfo[] = [
     availableModes: ['Ranked 🏆', 'Turbo ⚡', 'All Pick ⚔️'],
     statusBadge: 'unclassified',
     badgeLabel: 'DESCLASIFICADO ⚠️',
-    isSelectable: true,
+    isSelectable: false,
   },
   {
     id: 'minecraft',

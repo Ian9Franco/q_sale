@@ -1,111 +1,17 @@
 import { NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
-import { AppState, PlayerStatus } from '../../types';
+import { PlayerStatus, AppState } from '../../types';
 import { broadcastPushNotification } from '../../lib/push';
-
-const DATA_DIR = path.join(process.cwd(), 'data');
-const DATA_FILE = path.join(DATA_DIR, 'app_state.json');
-
-const INITIAL_STATE: AppState = {
-  activeGameId: 'r6_siege',
-  discordInviteUrl: 'https://discord.com',
-  lastUpdated: new Date().toISOString(),
-  players: [
-    {
-      id: 'ian',
-      name: 'IAN',
-      avatar: 'ash',
-      color: '#ff4757',
-      availability: 'now',
-      discordStatus: 'in_voice',
-      gameId: 'r6_siege',
-      gameMode: 'Ranked 🏆',
-      customNote: '¡Listo para rankeds!',
-      updatedAt: new Date().toISOString(),
-    },
-    {
-      id: 'chango',
-      name: 'CHANGO',
-      avatar: 'sledge',
-      color: '#2ed573',
-      availability: 'offline',
-      discordStatus: 'offline',
-      gameId: 'r6_siege',
-      gameMode: 'Ranked 🏆',
-      customNote: '',
-      updatedAt: new Date().toISOString(),
-    },
-    {
-      id: 'el_mati',
-      name: 'EL MATI',
-      avatar: 'smoke',
-      color: '#1e90ff',
-      availability: 'offline',
-      discordStatus: 'offline',
-      gameId: 'r6_siege',
-      gameMode: 'Ranked 🏆',
-      customNote: '',
-      updatedAt: new Date().toISOString(),
-    },
-    {
-      id: 'volvo_milei',
-      name: 'VOLVO MILEI',
-      avatar: 'jager',
-      color: '#ffa502',
-      availability: 'offline',
-      discordStatus: 'offline',
-      gameId: 'r6_siege',
-      gameMode: 'Ranked 🏆',
-      customNote: '',
-      updatedAt: new Date().toISOString(),
-    },
-  ],
-};
-
-let memoryCache: AppState | null = null;
-
-function getStoredState(): AppState {
-  try {
-    if (fs.existsSync(DATA_FILE)) {
-      const data = fs.readFileSync(DATA_FILE, 'utf-8');
-      const parsed: AppState = JSON.parse(data);
-      // Ensure the squad has the exact 4 default friends if not present
-      if (parsed.players && parsed.players.length > 0) {
-        memoryCache = parsed;
-        return parsed;
-      }
-    }
-  } catch (err) {
-    console.warn('Could not read persistent file, using cache/defaults:', err);
-  }
-
-  memoryCache = { ...INITIAL_STATE };
-  saveState(memoryCache);
-  return memoryCache;
-}
-
-function saveState(state: AppState) {
-  memoryCache = state;
-  try {
-    if (!fs.existsSync(DATA_DIR)) {
-      fs.mkdirSync(DATA_DIR, { recursive: true });
-    }
-    fs.writeFileSync(DATA_FILE, JSON.stringify(state, null, 2), 'utf-8');
-  } catch (err) {
-    console.warn('Could not write persistent file:', err);
-  }
-}
+import { getDbAppState, saveDbAppState, INITIAL_STATE } from '../../lib/redis';
 
 export async function GET() {
-  const state = getStoredState();
+  const state = await getDbAppState();
   return NextResponse.json(state);
 }
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const currentState = getStoredState();
+    const currentState = await getDbAppState();
     const now = new Date().toISOString();
 
     if (body.action === 'update_player') {
@@ -141,7 +47,7 @@ export async function POST(request: Request) {
       }
 
       currentState.lastUpdated = now;
-      saveState(currentState);
+      await saveDbAppState(currentState);
 
       // Trigger Web Push Notification if player marked active/available
       if (body.sendNotification !== false) {
@@ -181,7 +87,7 @@ export async function POST(request: Request) {
       const { id } = body;
       currentState.players = currentState.players.filter(p => p.id !== id);
       currentState.lastUpdated = now;
-      saveState(currentState);
+      await saveDbAppState(currentState);
       return NextResponse.json({ success: true, state: currentState });
     }
 
@@ -193,7 +99,7 @@ export async function POST(request: Request) {
         currentState.activeGameId = body.activeGameId;
       }
       currentState.lastUpdated = now;
-      saveState(currentState);
+      await saveDbAppState(currentState);
       return NextResponse.json({ success: true, state: currentState });
     }
 
@@ -202,7 +108,7 @@ export async function POST(request: Request) {
         ...INITIAL_STATE,
         lastUpdated: now,
       };
-      saveState(resetState);
+      await saveDbAppState(resetState);
       return NextResponse.json({ success: true, state: resetState });
     }
 

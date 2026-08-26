@@ -84,10 +84,7 @@ export default function HomePage() {
   const [isUpdating, setIsUpdating] = useState<boolean>(false);
   const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
   const [showPwaModal, setShowPwaModal] = useState<boolean>(false);
-  const [showAddPlayerModal, setShowAddPlayerModal] = useState<boolean>(false);
   const [showSettingsModal, setShowSettingsModal] = useState<boolean>(false);
-  const [newPlayerName, setNewPlayerName] = useState<string>('');
-  const [newPlayerAvatar, setNewPlayerAvatar] = useState<string>('recruit');
   const [discordInviteInput, setDiscordInviteInput] = useState<string>('');
   const [lastSyncTime, setLastSyncTime] = useState<string>('');
 
@@ -320,44 +317,6 @@ export default function HomePage() {
     setDraftAvailability('now');
     setDraftDiscordStatus('in_voice');
     handleSaveStatus({ availability: 'now', discordStatus: 'in_voice' });
-  };
-
-  const handleAddNewPlayer = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newPlayerName.trim()) return;
-
-    const id = newPlayerName.trim().toLowerCase().replace(/\s+/g, '_') + '_' + Math.floor(Math.random() * 1000);
-    const newPlayerData: PlayerStatus = {
-      id,
-      name: newPlayerName.trim().toUpperCase(),
-      avatar: newPlayerAvatar,
-      color: ['#ff4757', '#2ed573', '#1e90ff', '#ffa502', '#9b59b6', '#00d2d3'][Math.floor(Math.random() * 6)],
-      availability: 'now',
-      discordStatus: 'in_voice',
-      gameId: 'r6_siege',
-      gameMode: 'Ranked 🏆',
-      customNote: '¡Nuevo en el squad!',
-      updatedAt: new Date().toISOString(),
-    };
-
-    try {
-      const res = await fetch('/api/status', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'update_player', player: newPlayerData }),
-      });
-      const data = await res.json();
-      if (data.state) {
-        setAppState(data.state);
-        setActivePlayerId(id);
-        localStorage.setItem('q_sale_active_user', id);
-        setShowAddPlayerModal(false);
-        setNewPlayerName('');
-        if (soundEnabled) playTacticalSound('ready');
-      }
-    } catch (err) {
-      console.error('Error agregando jugador:', err);
-    }
   };
 
   const handleSaveSettings = async (e: React.FormEvent) => {
@@ -595,7 +554,7 @@ export default function HomePage() {
                 transform: activePlayer?.availability === 'now' && activePlayer?.discordStatus === 'in_voice' ? 'scale(0.98)' : 'scale(1)',
               }}
             >
-              📢 ¡ESTOY EN DISCORD Y ENTRANDO A R6! (Avisar al Squad)
+              Avisar Squad
             </button>
           </div>
         </div>
@@ -669,14 +628,8 @@ export default function HomePage() {
           <div style={{ marginBottom: '18px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
               <label style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                👤 ¿Quién sos vos?
+                Jugador Activo
               </label>
-              <button
-                onClick={() => setShowAddPlayerModal(true)}
-                style={{ background: 'none', border: 'none', color: 'var(--accent-r6)', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer' }}
-              >
-                + Agregar amigo
-              </button>
             </div>
 
             <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '6px' }}>
@@ -716,7 +669,7 @@ export default function HomePage() {
           {/* Availability State Picker */}
           <div style={{ marginBottom: '16px' }}>
             <label style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '8px' }}>
-              ⚡ Tu Disponibilidad
+              Disponibilidad
             </label>
             
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
@@ -735,7 +688,7 @@ export default function HomePage() {
                   textAlign: 'center',
                 }}
               >
-                🟢 Disponible YA
+                Disponible YA
               </button>
 
               <button
@@ -753,7 +706,7 @@ export default function HomePage() {
                   textAlign: 'center',
                 }}
               >
-                ⏳ En 15-30 min
+                En 15-30 min
               </button>
 
               <button
@@ -771,7 +724,7 @@ export default function HomePage() {
                   textAlign: 'center',
                 }}
               >
-                🕒 A una hora / Día
+                Programado
               </button>
 
               <button
@@ -789,7 +742,7 @@ export default function HomePage() {
                   textAlign: 'center',
                 }}
               >
-                🔴 No puedo hoy
+                No disponible
               </button>
             </div>
           </div>
@@ -839,7 +792,7 @@ export default function HomePage() {
           {/* Discord Status Picker */}
           <div style={{ marginBottom: '16px' }}>
             <label style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '8px' }}>
-              🎙️ Estado en Discord
+              Estado en Discord
             </label>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '6px' }}>
               <button
@@ -856,7 +809,7 @@ export default function HomePage() {
                   cursor: 'pointer',
                 }}
               >
-                🎙️ En Canal
+                En Canal
               </button>
 
               <button
@@ -873,7 +826,7 @@ export default function HomePage() {
                   cursor: 'pointer',
                 }}
               >
-                ⏳ Entrando
+                Entrando
               </button>
 
               <button
@@ -890,7 +843,7 @@ export default function HomePage() {
                   cursor: 'pointer',
                 }}
               >
-                ❌ No Discord
+                Desconectado
               </button>
             </div>
           </div>
@@ -943,7 +896,7 @@ export default function HomePage() {
             className="btn btn-primary"
             style={{ width: '100%', padding: '12px', fontSize: '1rem' }}
           >
-            {isUpdating ? 'Notificando al squad...' : '📢 Actualizar y Notificar al Celular'}
+            {isUpdating ? 'Notificando al squad...' : 'Actualizar y Notificar'}
           </button>
         </div>
 
@@ -951,7 +904,7 @@ export default function HomePage() {
         <div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
             <h3 style={{ fontSize: '1.1rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.5px', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
-              👥 Estado del Squad
+              Estado del Squad
             </h3>
             <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
               {players.length} amigos en el radar
@@ -1136,7 +1089,7 @@ export default function HomePage() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
           <div>
             <h3 style={{ fontSize: '1.1rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.5px', margin: 0 }}>
-              🎮 Catálogo de Juegos
+              Catálogo de Juegos
             </h3>
             <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', margin: 0 }}>
               Juego principal seleccionado: <strong>{currentGame.name}</strong>
@@ -1277,7 +1230,7 @@ export default function HomePage() {
           <div className="glass-panel" style={{ maxWidth: '440px', width: '100%', padding: '24px', borderRadius: '20px', border: '1px solid var(--accent-cyan)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
               <h3 style={{ fontSize: '1.2rem', fontWeight: 900, color: '#00f0ff', margin: 0 }}>
-                📱 Instalar en el Celular
+                Instalar PWA
               </h3>
               <button
                 onClick={() => setShowPwaModal(false)}
@@ -1323,84 +1276,7 @@ export default function HomePage() {
         </div>
       )}
 
-      {/* Add New Player Modal */}
-      {showAddPlayerModal && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'rgba(0, 0, 0, 0.8)',
-          backdropFilter: 'blur(8px)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 100,
-          padding: '16px',
-        }}>
-          <form onSubmit={handleAddNewPlayer} className="glass-panel" style={{ maxWidth: '400px', width: '100%', padding: '24px', borderRadius: '20px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-              <h3 style={{ fontSize: '1.2rem', fontWeight: 900, color: '#fff', margin: 0 }}>
-                ➕ Agregar Amigo al Squad
-              </h3>
-              <button
-                type="button"
-                onClick={() => setShowAddPlayerModal(false)}
-                style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '1.2rem', cursor: 'pointer' }}
-              >
-                ✕
-              </button>
-            </div>
 
-            <div style={{ marginBottom: '14px' }}>
-              <label htmlFor={newPlayerNameInputId} style={{ fontSize: '0.8rem', color: 'var(--text-muted)', display: 'block', marginBottom: '6px' }}>Nombre / Nick</label>
-              <input
-                id={newPlayerNameInputId}
-                type="text"
-                required
-                placeholder="ej: PEDRO, JUAN, etc."
-                value={newPlayerName}
-                onChange={(e) => setNewPlayerName(e.target.value)}
-                autoFocus
-              />
-            </div>
-
-            <div style={{ marginBottom: '20px' }}>
-              <label htmlFor={newPlayerAvatarSelectId} style={{ fontSize: '0.8rem', color: 'var(--text-muted)', display: 'block', marginBottom: '6px' }}>Operador de R6 / Avatar</label>
-              <select
-                id={newPlayerAvatarSelectId}
-                value={newPlayerAvatar}
-                onChange={(e) => setNewPlayerAvatar(e.target.value)}
-              >
-                {OPERATOR_AVATARS.map(op => (
-                  <option key={op.id} value={op.id}>
-                    {op.icon} {op.name} - {op.role}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div style={{ display: 'flex', gap: '10px' }}>
-              <button
-                type="button"
-                onClick={() => setShowAddPlayerModal(false)}
-                className="btn btn-ghost"
-                style={{ flex: 1 }}
-              >
-                Cancelar
-              </button>
-              <button
-                type="submit"
-                className="btn btn-primary"
-                style={{ flex: 1 }}
-              >
-                Guardar Amigo
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
 
       {/* Settings Modal (Discord link, etc.) */}
       {showSettingsModal && (
@@ -1421,7 +1297,7 @@ export default function HomePage() {
           <form onSubmit={handleSaveSettings} className="glass-panel" style={{ maxWidth: '420px', width: '100%', padding: '24px', borderRadius: '20px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
               <h3 style={{ fontSize: '1.2rem', fontWeight: 900, color: '#fff', margin: 0 }}>
-                ⚙️ Configuración del Grupo
+                Configuración del Grupo
               </h3>
               <button
                 type="button"

@@ -91,22 +91,24 @@ body {
 .tactical-border::before {
   content: '';
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 12px;
-  height: 12px;
+  top: -1px;
+  left: -1px;
+  width: 14px;
+  height: 14px;
   border-top: 2px solid var(--accent-r6);
   border-left: 2px solid var(--accent-r6);
+  border-top-left-radius: calc(var(--radius-md) + 1px);
 }
 .tactical-border::after {
   content: '';
   position: absolute;
-  bottom: 0;
-  right: 0;
-  width: 12px;
-  height: 12px;
+  bottom: -1px;
+  right: -1px;
+  width: 14px;
+  height: 14px;
   border-bottom: 2px solid var(--accent-r6);
   border-right: 2px solid var(--accent-r6);
+  border-bottom-right-radius: calc(var(--radius-md) + 1px);
 }
 
 /* Pulse animation for Live status */
