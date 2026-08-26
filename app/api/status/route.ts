@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
 import { AppState, PlayerStatus } from '../../types';
+import { broadcastPushNotification } from '../../lib/push';
 
 const DATA_DIR = path.join(process.cwd(), 'data');
 const DATA_FILE = path.join(DATA_DIR, 'app_state.json');
@@ -65,7 +66,6 @@ const INITIAL_STATE: AppState = {
   ],
 };
 
-// Memory fallback cache in case disk write is restricted or during serverless runtime
 let memoryCache: AppState | null = null;
 
 function getStoredState(): AppState {
@@ -114,16 +114,16 @@ export async function POST(request: Request) {
       const updatedPlayer: Partial<PlayerStatus> & { id: string } = body.player;
       
       const playerIndex = currentState.players.findIndex(p => p.id === updatedPlayer.id);
+      let finalPlayerName = 'Un amigo';
 
       if (playerIndex >= 0) {
-        // Update existing player
+        finalPlayerName = currentState.players[playerIndex].name;
         currentState.players[playerIndex] = {
           ...currentState.players[playerIndex],
           ...updatedPlayer,
           updatedAt: now,
         };
       } else {
-        // Add new player
         const newPlayer: PlayerStatus = {
           id: updatedPlayer.id || `player_${Date.now()}`,
           name: updatedPlayer.name || 'Nuevo Jugador',
@@ -138,11 +138,45 @@ export async function POST(request: Request) {
           scheduledDate: updatedPlayer.scheduledDate,
           updatedAt: now,
         };
+        finalPlayerName = newPlayer.name;
         currentState.players.push(newPlayer);
       }
 
       currentState.lastUpdated = now;
       saveState(currentState);
+
+      // Trigger Web Push Notification if player marked active/available
+      if (body.sendNotification !== false) {
+        let pushTitle = '¿Qué Sale? - R6 Squad 🎯';
+        let pushBody = '';
+
+        if (updatedPlayer.availability === 'now') {
+          if (updatedPlayer.discordStatus === 'in_voice') {
+            pushBody = `⚡ ¡${finalPlayerName} está en Discord y entrando a R6 Siege!`;
+          } else {
+            pushBody = `🟢 ${finalPlayerName} está disponible YA para jugar.`;
+          }
+        } else if (updatedPlayer.availability === 'soon') {
+          pushBody = `⏳ ${finalPlayerName} entra en 15-30 min.`;
+        } else if (updatedPlayer.availability === 'scheduled') {
+          pushBody = `🕒 ${finalPlayerName} avisó que juega ${updatedPlayer.scheduledDate || 'Hoy'} a las ${updatedPlayer.scheduledTime || '22:00'}.`;
+        }
+
+        if (updatedPlayer.customNote) {
+          pushBody += ` ("${updatedPlayer.customNote}")`;
+        }
+
+        if (pushBody) {
+          // Send in background without blocking response
+          broadcastPushNotification({
+            title: pushTitle,
+            body: pushBody,
+            senderUserId: updatedPlayer.id,
+            url: '/',
+          }).catch(e => console.error('Push broadcast error:', e));
+        }
+      }
+
       return NextResponse.json({ success: true, state: currentState });
     }
 

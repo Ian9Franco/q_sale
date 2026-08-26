@@ -3,6 +3,18 @@
 import React, { useState, useEffect, useCallback, useId } from 'react';
 import { AppState, PlayerStatus, GAMES_CATALOG, AvailabilityType, DiscordStatus, GameId } from './types';
 
+// Helper to convert base64 URL to Uint8Array for VAPID
+function urlBase64ToUint8Array(base64String: string) {
+  const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const rawData = window.atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+  for (let i = 0; i < rawData.length; ++i) {
+    outputArray[i] = rawData.charCodeAt(i);
+  }
+  return outputArray;
+}
+
 // Web Audio API Synthesizer for tactical sounds
 const playTacticalSound = (type: 'ping' | 'ready' | 'squad_full') => {
   try {
@@ -26,9 +38,9 @@ const playTacticalSound = (type: 'ping' | 'ready' | 'squad_full') => {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.type = 'triangle';
-      osc.frequency.setValueAtTime(523.25, ctx.currentTime); // C5
-      osc.frequency.setValueAtTime(659.25, ctx.currentTime + 0.08); // E5
-      osc.frequency.setValueAtTime(783.99, ctx.currentTime + 0.16); // G5
+      osc.frequency.setValueAtTime(523.25, ctx.currentTime);
+      osc.frequency.setValueAtTime(659.25, ctx.currentTime + 0.08);
+      osc.frequency.setValueAtTime(783.99, ctx.currentTime + 0.16);
       gain.gain.setValueAtTime(0.25, ctx.currentTime);
       gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
       osc.connect(gain);
@@ -50,7 +62,7 @@ const playTacticalSound = (type: 'ping' | 'ready' | 'squad_full') => {
       });
     }
   } catch {
-    // Audio may be blocked by browser policy before first interaction
+    // Audio might be blocked before first interaction
   }
 };
 
@@ -79,6 +91,12 @@ export default function HomePage() {
   const [discordInviteInput, setDiscordInviteInput] = useState<string>('');
   const [lastSyncTime, setLastSyncTime] = useState<string>('');
 
+  // Push Notifications state
+  const [isPushSubscribed, setIsPushSubscribed] = useState<boolean>(false);
+  const [isPushSupported, setIsPushSupported] = useState<boolean>(false);
+  const [isSubscribingPush, setIsSubscribingPush] = useState<boolean>(false);
+  const [pushStatusMessage, setPushStatusMessage] = useState<string>('');
+
   // Player draft edit state
   const [draftAvailability, setDraftAvailability] = useState<AvailabilityType>('now');
   const [draftScheduledTime, setDraftScheduledTime] = useState<string>('22:00');
@@ -88,6 +106,96 @@ export default function HomePage() {
   const [draftCustomNote, setDraftCustomNote] = useState<string>('');
   const [draftGameId, setDraftGameId] = useState<GameId>('r6_siege');
 
+  // Register Service Worker & check Push status
+  useEffect(() => {
+    if (typeof window !== 'undefined' && 'serviceWorker' in navigator && 'PushManager' in window) {
+      setIsPushSupported(true);
+      navigator.serviceWorker.register('/sw.js').then(async (registration) => {
+        const sub = await registration.pushManager.getSubscription();
+        if (sub) {
+          setIsPushSubscribed(true);
+        }
+      }).catch(err => {
+        console.warn('Service worker registration failed:', err);
+      });
+    }
+  }, []);
+
+  const handleTogglePushNotification = async () => {
+    if (!isPushSupported) {
+      alert('Tu navegador no soporta notificaciones push directamente. Si estás en iPhone, añade primero la web a la pantalla de inicio (Compartir -> Agregar a Inicio).');
+      return;
+    }
+
+    setIsSubscribingPush(true);
+    try {
+      const registration = await navigator.serviceWorker.ready;
+      
+      if (isPushSubscribed) {
+        // Unsubscribe
+        const sub = await registration.pushManager.getSubscription();
+        if (sub) {
+          await sub.unsubscribe();
+          await fetch('/api/push/subscribe', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'unsubscribe', subscription: sub }),
+          });
+        }
+        setIsPushSubscribed(false);
+        setPushStatusMessage('Notificaciones desactivadas.');
+      } else {
+        // Subscribe
+        const keyRes = await fetch('/api/push/subscribe');
+        const { publicKey } = await keyRes.json();
+        
+        const permission = await Notification.requestPermission();
+        if (permission !== 'granted') {
+          alert('Debes permitir las notificaciones en tu navegador para recibir los avisos del squad.');
+          setIsSubscribingPush(false);
+          return;
+        }
+
+        const sub = await registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlBase64ToUint8Array(publicKey),
+        });
+
+        await fetch('/api/push/subscribe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ subscription: sub, userId: activePlayerId }),
+        });
+
+        setIsPushSubscribed(true);
+        setPushStatusMessage('✅ ¡Notificaciones push activadas! Te avisará al celular cuando jueguen.');
+        if (soundEnabled) playTacticalSound('ready');
+      }
+    } catch (err) {
+      console.error('Error con push notifications:', err);
+      alert('Error activando notificaciones: ' + String(err));
+    } finally {
+      setIsSubscribingPush(false);
+      setTimeout(() => setPushStatusMessage(''), 4000);
+    }
+  };
+
+  const handleSendTestPush = async () => {
+    try {
+      await fetch('/api/push/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: '¿Qué Sale? - Prueba 🎯',
+          message: '¡Las notificaciones al celular están funcionando perfecto!',
+        }),
+      });
+      alert('Notificación enviada. Deberías verla en tu celular/navegador en unos segundos.');
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   // Fetch state from backend API
   const fetchStatus = useCallback(async () => {
     try {
@@ -96,7 +204,6 @@ export default function HomePage() {
       const data: AppState = await res.json();
       
       setAppState(prev => {
-        // Play audio if ready count increased
         if (prev && soundEnabled) {
           const prevReady = prev.players.filter(p => p.availability === 'now').length;
           const newReady = data.players.filter(p => p.availability === 'now').length;
@@ -121,11 +228,11 @@ export default function HomePage() {
   // Initial load & Polling
   useEffect(() => {
     fetchStatus();
-    const interval = setInterval(fetchStatus, 4000); // sync every 4 seconds
+    const interval = setInterval(fetchStatus, 4000);
     return () => clearInterval(interval);
   }, [fetchStatus]);
 
-  // Read / save active user from localStorage
+  // Read active user from localStorage
   useEffect(() => {
     const savedUserId = localStorage.getItem('q_sale_active_user');
     if (savedUserId) {
@@ -192,7 +299,7 @@ export default function HomePage() {
       const res = await fetch('/api/status', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'update_player', player: payload }),
+        body: JSON.stringify({ action: 'update_player', player: payload, sendNotification: true }),
       });
       const data = await res.json();
       if (data.state) {
@@ -209,7 +316,7 @@ export default function HomePage() {
     }
   };
 
-  const handleQuickReady = () => {
+  const handleQuickReadyAndDiscord = () => {
     setDraftAvailability('now');
     setDraftDiscordStatus('in_voice');
     handleSaveStatus({ availability: 'now', discordStatus: 'in_voice' });
@@ -274,11 +381,9 @@ export default function HomePage() {
     }
   };
 
-  // Calculations for Rainbow Six Siege Squad
   const players = appState?.players || [];
   const readyNowPlayers = players.filter(p => p.availability === 'now');
   const scheduledPlayers = players.filter(p => p.availability === 'scheduled' || p.availability === 'soon');
-  const offlinePlayers = players.filter(p => p.availability === 'offline');
   const inVoiceCount = players.filter(p => p.discordStatus === 'in_voice').length;
   
   const currentGame = GAMES_CATALOG.find(g => g.id === (appState?.activeGameId || 'r6_siege')) || GAMES_CATALOG[0];
@@ -301,7 +406,7 @@ export default function HomePage() {
         alignItems: 'center',
         justifyContent: 'space-between',
         padding: '12px 16px',
-        marginBottom: '20px',
+        marginBottom: '16px',
         borderRadius: '16px',
         background: 'rgba(15, 23, 42, 0.8)',
         border: '1px solid rgba(255, 255, 255, 0.08)',
@@ -373,6 +478,58 @@ export default function HomePage() {
         </div>
       </header>
 
+      {/* Push Notification Activation Banner */}
+      <div style={{
+        padding: '10px 16px',
+        borderRadius: '12px',
+        marginBottom: '20px',
+        background: isPushSubscribed ? 'rgba(0, 230, 118, 0.1)' : 'rgba(88, 101, 242, 0.15)',
+        border: `1px solid ${isPushSubscribed ? 'rgba(0, 230, 118, 0.3)' : 'rgba(88, 101, 242, 0.4)'}`,
+        display: 'flex',
+        flexWrap: 'wrap',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: '10px',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <span style={{ fontSize: '20px' }}>{isPushSubscribed ? '🔔' : '🔕'}</span>
+          <div>
+            <div style={{ fontSize: '0.85rem', fontWeight: 800, color: isPushSubscribed ? '#00e676' : '#fff' }}>
+              {isPushSubscribed ? 'Notificaciones Push activadas en este dispositivo' : '¿Querés que te suene el celular cuando alguien avise que juega?'}
+            </div>
+            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+              {isPushSubscribed ? 'Recibirás un aviso cuando un amigo entre a Discord o a R6.' : 'Activá las alertas para que te llegue la notificación directo a la pantalla de bloqueo.'}
+            </div>
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          {isPushSubscribed && (
+            <button
+              onClick={handleSendTestPush}
+              className="btn btn-ghost"
+              style={{ padding: '6px 12px', fontSize: '0.75rem' }}
+            >
+              Test Alerta 🚀
+            </button>
+          )}
+          <button
+            onClick={handleTogglePushNotification}
+            disabled={isSubscribingPush}
+            className={`btn ${isPushSubscribed ? 'btn-ghost' : 'btn-primary'}`}
+            style={{ padding: '8px 14px', fontSize: '0.8rem' }}
+          >
+            {isSubscribingPush ? 'Configurando...' : isPushSubscribed ? 'Desactivar 🔕' : 'Activar Notificaciones 🔔'}
+          </button>
+        </div>
+      </div>
+
+      {pushStatusMessage && (
+        <div style={{ padding: '8px 14px', borderRadius: '8px', background: 'rgba(0, 230, 118, 0.2)', color: '#00e676', fontSize: '0.85rem', marginBottom: '16px', textAlign: 'center', fontWeight: 700 }}>
+          {pushStatusMessage}
+        </div>
+      )}
+
       {/* Main Squad Hero Banner */}
       <section style={{
         position: 'relative',
@@ -421,25 +578,25 @@ export default function HomePage() {
               {isSquadFull
                 ? '¡Hay 5 jugadores listos! Métanse a Discord para rankear ya.'
                 : readyCount === 0
-                ? 'Nadie está listo ahora mismo. Marcá tu disponibilidad abajo para convocar.'
+                ? 'Nadie está listo ahora mismo. Marcá tu disponibilidad abajo para notificar al grupo.'
                 : `Faltan ${maxSquad - readyCount} jugadores para armar el equipo de 5.`}
             </p>
           </div>
 
-          {/* Quick Action Button */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          {/* Quick Action Buttons */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             <button
-              onClick={handleQuickReady}
+              onClick={handleQuickReadyAndDiscord}
               disabled={isUpdating}
               className="btn btn-success"
               style={{
                 padding: '14px 24px',
-                fontSize: '1.05rem',
+                fontSize: '1rem',
                 borderRadius: '12px',
-                transform: activePlayer?.availability === 'now' ? 'scale(0.98)' : 'scale(1)',
+                transform: activePlayer?.availability === 'now' && activePlayer?.discordStatus === 'in_voice' ? 'scale(0.98)' : 'scale(1)',
               }}
             >
-              {activePlayer?.availability === 'now' ? '✅ Ya estás marcado como LISTO' : '⚡ ¡ESTOY LISTO YA! (Sale R6)'}
+              📢 ¡ESTOY EN DISCORD Y ENTRANDO A R6! (Avisar a Todos)
             </button>
           </div>
         </div>
@@ -785,7 +942,7 @@ export default function HomePage() {
             className="btn btn-primary"
             style={{ width: '100%', padding: '12px', fontSize: '1rem' }}
           >
-            {isUpdating ? 'Actualizando...' : '💾 Actualizar Mi Estado'}
+            {isUpdating ? 'Notificando al squad...' : '📢 Actualizar y Notificar al Celular'}
           </button>
         </div>
 
@@ -1087,7 +1244,7 @@ export default function HomePage() {
             </div>
 
             <p style={{ fontSize: '0.9rem', color: 'var(--text-main)', marginBottom: '16px' }}>
-              Podés anclar <strong>Q-Sale?</strong> al escritorio de tu celular para abrirla al instante como una app nativa:
+              Podés anclar <strong>Q-Sale?</strong> al escritorio de tu celular para recibir notificaciones y abrirla al instante como una app:
             </p>
 
             <div style={{ background: 'rgba(0, 0, 0, 0.4)', padding: '14px', borderRadius: '12px', marginBottom: '14px' }}>
