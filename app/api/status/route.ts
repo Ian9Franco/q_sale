@@ -14,54 +14,51 @@ const INITIAL_STATE: AppState = {
   players: [
     {
       id: 'ian',
-      name: 'Ian',
+      name: 'IAN',
       avatar: 'ash',
       color: '#ff4757',
       availability: 'now',
       discordStatus: 'in_voice',
       gameId: 'r6_siege',
       gameMode: 'Ranked 🏆',
-      customNote: '¡Listo para rankeds de Siege!',
+      customNote: '¡Listo para rankeds!',
       updatedAt: new Date().toISOString(),
     },
     {
-      id: 'mateo',
-      name: 'Mateo',
+      id: 'chango',
+      name: 'CHANGO',
       avatar: 'sledge',
       color: '#2ed573',
-      availability: 'scheduled',
-      scheduledTime: '22:30',
-      scheduledDate: 'Hoy',
+      availability: 'offline',
       discordStatus: 'offline',
       gameId: 'r6_siege',
       gameMode: 'Ranked 🏆',
-      customNote: 'Ceno y me conecto',
-      updatedAt: new Date(Date.now() - 1000 * 60 * 15).toISOString(),
+      customNote: '',
+      updatedAt: new Date().toISOString(),
     },
     {
-      id: 'lucas',
-      name: 'Lucas',
+      id: 'el_mati',
+      name: 'EL MATI',
       avatar: 'smoke',
       color: '#1e90ff',
-      availability: 'soon',
-      scheduledTime: 'En 15 min',
-      discordStatus: 'joining',
+      availability: 'offline',
+      discordStatus: 'offline',
       gameId: 'r6_siege',
-      gameMode: 'Standard 🛡️',
-      customNote: 'Prendiendo la PC',
-      updatedAt: new Date(Date.now() - 1000 * 60 * 5).toISOString(),
+      gameMode: 'Ranked 🏆',
+      customNote: '',
+      updatedAt: new Date().toISOString(),
     },
     {
-      id: 'franco',
-      name: 'Franco',
+      id: 'volvo_milei',
+      name: 'VOLVO MILEI',
       avatar: 'jager',
       color: '#ffa502',
       availability: 'offline',
       discordStatus: 'offline',
       gameId: 'r6_siege',
       gameMode: 'Ranked 🏆',
-      customNote: 'Capaz más tarde',
-      updatedAt: new Date(Date.now() - 1000 * 60 * 60).toISOString(),
+      customNote: '',
+      updatedAt: new Date().toISOString(),
     },
   ],
 };
@@ -72,18 +69,19 @@ function getStoredState(): AppState {
   try {
     if (fs.existsSync(DATA_FILE)) {
       const data = fs.readFileSync(DATA_FILE, 'utf-8');
-      const parsed = JSON.parse(data);
-      memoryCache = parsed;
-      return parsed;
+      const parsed: AppState = JSON.parse(data);
+      // Ensure the squad has the exact 4 default friends if not present
+      if (parsed.players && parsed.players.length > 0) {
+        memoryCache = parsed;
+        return parsed;
+      }
     }
   } catch (err) {
     console.warn('Could not read persistent file, using cache/defaults:', err);
   }
 
-  if (!memoryCache) {
-    memoryCache = { ...INITIAL_STATE };
-    saveState(memoryCache);
-  }
+  memoryCache = { ...INITIAL_STATE };
+  saveState(memoryCache);
   return memoryCache;
 }
 
@@ -167,7 +165,6 @@ export async function POST(request: Request) {
         }
 
         if (pushBody) {
-          // Send in background without blocking response
           broadcastPushNotification({
             title: pushTitle,
             body: pushBody,

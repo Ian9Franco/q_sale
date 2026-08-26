@@ -1,0 +1,55 @@
+{
+  "activeGameId": "r6_siege",
+  "discordInviteUrl": "https://discord.com",
+  "lastUpdated": "2026-08-26T20:12:00.000Z",
+  "players": [
+    {
+      "id": "ian",
+      "name": "IAN",
+      "avatar": "ash",
+      "color": "#ff4757",
+      "availability": "now",
+      "discordStatus": "in_voice",
+      "gameId": "r6_siege",
+      "gameMode": "Ranked 🏆",
+      "customNote": "¡Listo para rankeds!",
+      "updatedAt": "2026-08-26T20:12:00.000Z"
+    },
+    {
+      "id": "chango",
+      "name": "CHANGO",
+      "avatar": "sledge",
+      "color": "#2ed573",
+      "availability": "offline",
+      "discordStatus": "offline",
+      "gameId": "r6_siege",
+      "gameMode": "Ranked 🏆",
+      "customNote": "",
+      "updatedAt": "2026-08-26T20:12:00.000Z"
+    },
+    {
+      "id": "el_mati",
+      "name": "EL MATI",
+      "avatar": "smoke",
+      "color": "#1e90ff",
+      "availability": "offline",
+      "discordStatus": "offline",
+      "gameId": "r6_siege",
+      "gameMode": "Ranked 🏆",
+      "customNote": "",
+      "updatedAt": "2026-08-26T20:12:00.000Z"
+    },
+    {
+      "id": "volvo_milei",
+      "name": "VOLVO MILEI",
+      "avatar": "jager",
+      "color": "#ffa502",
+      "availability": "offline",
+      "discordStatus": "offline",
+      "gameId": "r6_siege",
+      "gameMode": "Ranked 🏆",
+      "customNote": "",
+      "updatedAt": "2026-08-26T20:12:00.000Z"
+    }
+  ]
+}
