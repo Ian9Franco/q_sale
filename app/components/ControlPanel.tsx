@@ -44,31 +44,33 @@ export default function ControlPanel({
   onOpenQSosModal,
 }: ControlPanelProps) {
   return (
-    <div className="flex flex-col gap-2 w-full p-0.5">
+    <div className="flex flex-col gap-2.5 w-full p-1.5">
       {/* Title */}
-      <div className="text-[10px] sm:text-xs font-black uppercase tracking-wider text-[#EAE8D4] text-center sm:text-left truncate">
+      <div className="text-[10px] sm:text-xs font-black uppercase tracking-wider text-[#EAE8D4] text-center sm:text-left truncate px-0.5">
         DISPONIBILIDAD
       </div>
 
       {/* Styled Active User Pill (Click to open ¿Q-SOS?) */}
-      <motion.button
-        type="button"
-        whileTap={{ scale: 0.94, y: 1.5 }}
-        onClick={onOpenQSosModal}
-        className="w-full flex items-center justify-between bg-[#2D2D2D] text-[#F4F4E6] font-black text-[11px] sm:text-xs py-2.5 px-3 rounded-xl border-2 border-black shadow-[0_0_0_2px_#F4F4E6,0_3px_0_2px_#141414] cursor-pointer hover:bg-[#383838] transition-colors"
-        title="Cambiar quién sos"
-      >
-        <div className="flex items-center gap-2 min-w-0">
-          <UserCheck size={15} className="text-[#52E010] flex-shrink-0" />
-          <span className="truncate uppercase tracking-wider">{activePlayer?.name || 'IAN'}</span>
-        </div>
-        <span className="text-[9px] font-black px-2 py-0.5 rounded bg-[#52E010] text-black border border-black uppercase flex-shrink-0 shadow-[0_1px_0_#2D7A08]">
-          ¿SOS?
-        </span>
-      </motion.button>
+      <div className="w-full p-0.5">
+        <motion.button
+          type="button"
+          whileTap={{ scale: 0.94, y: 1.5 }}
+          onClick={onOpenQSosModal}
+          className="w-full flex items-center justify-between bg-[#2D2D2D] text-[#F4F4E6] font-black text-[11px] sm:text-xs py-2.5 px-3 rounded-xl border-2 border-black shadow-[0_0_0_2px_#F4F4E6,0_3px_0_2px_#141414] cursor-pointer hover:bg-[#383838] transition-colors"
+          title="Cambiar quién sos"
+        >
+          <div className="flex items-center gap-2 min-w-0">
+            <UserCheck size={15} className="text-[#52E010] flex-shrink-0" />
+            <span className="truncate uppercase tracking-wider">{activePlayer?.name || 'IAN'}</span>
+          </div>
+          <span className="text-[9px] font-black px-2 py-0.5 rounded bg-[#52E010] text-black border border-black uppercase flex-shrink-0 shadow-[0_1px_0_#2D7A08]">
+            ¿SOS?
+          </span>
+        </motion.button>
+      </div>
 
       {/* Availability Buttons: 4 in a row on mobile, 2x2 grid on desktop */}
-      <div className="grid grid-cols-4 md:grid-cols-2 gap-2 sm:gap-2.5 w-full mt-1">
+      <div className="grid grid-cols-4 md:grid-cols-2 gap-2 sm:gap-2.5 w-full mt-1 p-0.5">
         {availabilityOpts.map((opt) => {
           const isSelected = draftAvailability === opt.id;
 
@@ -162,7 +164,7 @@ export default function ControlPanel({
       </AnimatePresence>
 
       {/* Bigger Retro Terminal Note Box */}
-      <div className="mt-1 w-full flex flex-col gap-1">
+      <div className="mt-1 w-full flex flex-col gap-1 p-0.5">
         <span className="text-[9px] font-black text-[#A0A0A0] uppercase tracking-widest px-0.5">
           NOTA / MENSAJE
         </span>

@@ -20,19 +20,21 @@ const BG_MAP: Record<string, string> = {
 
 export default function SquadList({ players, activePlayerId, isLoading }: SquadListProps) {
   return (
-    <div className="flex flex-col gap-3 w-full p-0.5">
+    <div className="flex flex-col gap-3 w-full p-1.5">
       {/* Header Pill */}
-      <div className="w-full flex items-center justify-center py-2 rounded-xl bg-[#EAE8D4] border-2 border-black shadow-[0_0_0_2px_#F4F4E6,0_3px_0_2px_#141414]">
-        <span className="text-xs sm:text-sm font-black uppercase tracking-widest text-black truncate px-2">
-          SQUAD STATUS
-        </span>
+      <div className="w-full p-0.5">
+        <div className="w-full flex items-center justify-center py-2 rounded-xl bg-[#EAE8D4] border-2 border-black shadow-[0_0_0_2px_#F4F4E6,0_3px_0_2px_#141414]">
+          <span className="text-xs sm:text-sm font-black uppercase tracking-widest text-black truncate px-2">
+            SQUAD STATUS
+          </span>
+        </div>
       </div>
 
       {isLoading ? (
         <div className="text-center py-8 text-[#A0A0A0] text-xs font-black">CARGANDO SATÉLITES…</div>
       ) : (
         /* Vertical Cards Grid (2x2 tall portrait cards) */
-        <div className="grid grid-cols-2 gap-2.5 sm:gap-3 w-full">
+        <div className="grid grid-cols-2 gap-3 sm:gap-3.5 w-full p-1">
           {players.map((p, i) => {
             const isReady = p.availability === 'now';
             const isSoon = p.availability === 'soon';

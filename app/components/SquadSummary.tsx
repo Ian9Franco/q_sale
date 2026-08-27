@@ -32,9 +32,9 @@ export default function SquadSummary({
   onOpenPwaModal,
 }: SquadSummaryProps) {
   return (
-    <div className="flex flex-col gap-2.5 w-full min-w-0">
+    <div className="flex flex-col gap-3 w-full min-w-0 p-1.5">
       {/* 1 / 5 LISTOS with guaranteed no-wrap */}
-      <div className="flex flex-col items-center sm:items-start w-full">
+      <div className="flex flex-col items-center sm:items-start w-full px-0.5">
         <div className="flex items-baseline gap-1 whitespace-nowrap leading-none">
           <span className="text-[#52E010] text-2xl sm:text-3xl font-black">{readyCount}</span>
           <span className="text-[#F4F4E6] text-sm sm:text-base font-bold">/ {maxSquad}</span>
@@ -46,7 +46,7 @@ export default function SquadSummary({
       </div>
 
       {/* Slot Grid: 5 slots in 1 horizontal row on mobile, 2 columns on desktop */}
-      <div className="grid grid-cols-5 md:grid-cols-2 gap-1.5 sm:gap-2 w-full">
+      <div className="grid grid-cols-5 md:grid-cols-2 gap-1.5 sm:gap-2 w-full p-0.5">
         {[0, 1, 2, 3, 4].map((idx) => {
           const player = readyNowPlayers[idx];
           const filled = !!player;

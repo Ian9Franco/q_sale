@@ -260,9 +260,9 @@ export default function HomePage() {
         />
 
         {/* Responsive Dashboard: Stacked flow on Mobile (<md), 3-Column Arcade Grid on Tablet/Desktop (md+) */}
-        <div className="flex flex-col md:grid md:grid-cols-[minmax(0,140px)_minmax(0,1.55fr)_minmax(0,150px)] gap-4 sm:gap-5 items-start w-full">
+        <div className="flex flex-col md:grid md:grid-cols-[minmax(0,140px)_minmax(0,1.55fr)_minmax(0,150px)] gap-4 sm:gap-5 items-start w-full px-0.5">
           {/* Col 1 on Desktop, 2nd on Mobile (Disponibilidad) */}
-          <div className="order-2 md:order-1 min-w-0 w-full py-0.5">
+          <div className="order-2 md:order-1 min-w-0 w-full p-1">
             <ControlPanel
               players={players}
               activePlayerId={activePlayerId}
@@ -285,7 +285,7 @@ export default function HomePage() {
           </div>
 
           {/* Col 2 on Desktop, 1st on Mobile (Squad Status Cards - Hero) */}
-          <div className="order-1 md:order-2 min-w-0 w-full py-0.5">
+          <div className="order-1 md:order-2 min-w-0 w-full p-1">
             <SquadList
               players={players}
               activePlayerId={activePlayerId}
@@ -295,7 +295,7 @@ export default function HomePage() {
           </div>
 
           {/* Col 3 on Desktop, 3rd on Mobile (Squad Summary & Controls) */}
-          <div className="order-3 md:order-3 min-w-0 w-full py-0.5">
+          <div className="order-3 md:order-3 min-w-0 w-full p-1">
             <SquadSummary
               readyCount={readyCount}
               players={players}
@@ -314,14 +314,14 @@ export default function HomePage() {
         <GamesCatalog showCatalog={showCatalog} setShowCatalog={setShowCatalog} />
 
         {/* Bottom: ONLY ONE stripe at the bottom with the X button centered on top */}
-        <div className="relative flex items-center justify-center pt-2 pb-1">
+        <div className="relative flex items-center justify-center pt-3 pb-2">
           {/* Reverse animated marquee stripe */}
           <div className="w-full h-1.5 sm:h-2 rainbow-stripe-animated-reverse rounded-full absolute top-1/2 -translate-y-1/2" />
           {/* X button floating on top of the stripe */}
           <motion.button
             whileTap={{ scale: 0.88, y: 1 }}
             onClick={() => setShowQSosModal(true)}
-            className="relative z-10 w-9 h-9 rounded-full bg-black border-2 border-black shadow-[0_0_0_2px_#F4F4E6,0_2px_8px_rgba(0,0,0,0.8)] flex items-center justify-center cursor-pointer hover:bg-[#222] transition-colors"
+            className="relative z-10 w-9 h-9 rounded-full bg-black border-2 border-black shadow-[0_0_0_2px_#F4F4E6,0_2px_8px_rgba(0,0,0,0.8)] flex items-center justify-center cursor-pointer hover:bg-[#222] transition-colors my-1"
             title="¿Q-SOS? Elige tu personaje"
           >
             <span className="text-[#F4F4E6] font-black text-sm select-none">✖</span>
