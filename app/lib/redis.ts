@@ -73,6 +73,18 @@ export const INITIAL_STATE: AppState = {
       customNote: '',
       updatedAt: new Date().toISOString(),
     },
+    {
+      id: 'aegis',
+      name: 'AEGIS',
+      avatar: '/Uandi.webp',
+      color: '#ff3838',
+      availability: 'offline',
+      discordStatus: 'offline',
+      gameId: 'r6_siege',
+      gameMode: 'Ranked 🏆',
+      customNote: '',
+      updatedAt: new Date().toISOString(),
+    },
   ],
 };
 
@@ -81,6 +93,8 @@ const ARTWORK_MAP: Record<string, { name: string; avatar: string }> = {
   chango: { name: 'BANDIT', avatar: '/Bandit.webp' },
   el_mati: { name: 'FARSIGHT', avatar: '/Farsight.webp' },
   volvo_milei: { name: 'OUTRIDER', avatar: '/Outrider.webp' },
+  aegis: { name: 'AEGIS', avatar: '/Uandi.webp' },
+  uandi: { name: 'AEGIS', avatar: '/Uandi.webp' },
 };
 
 export async function getDbAppState(): Promise<AppState> {
@@ -101,6 +115,26 @@ export async function getDbAppState(): Promise<AppState> {
           }
           return p;
         });
+
+        // Ensure Aegis is present in existing Redis database
+        const hasAegis = parsed.players.some((p) => p.id === 'aegis' || p.id === 'uandi');
+        if (!hasAegis) {
+          parsed.players.push({
+            id: 'aegis',
+            name: 'AEGIS',
+            avatar: '/Uandi.webp',
+            color: '#ff3838',
+            availability: 'offline',
+            discordStatus: 'offline',
+            gameId: 'r6_siege',
+            gameMode: 'Ranked 🏆',
+            customNote: '',
+            updatedAt: new Date().toISOString(),
+          });
+          // Save updated state with Aegis
+          await saveDbAppState(parsed);
+        }
+
         return parsed;
       }
     }

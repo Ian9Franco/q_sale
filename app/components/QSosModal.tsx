@@ -18,6 +18,8 @@ const BG_MAP: Record<string, string> = {
   chango: '/Bandit.webp',
   el_mati: '/Farsight.webp',
   volvo_milei: '/Outrider.webp',
+  aegis: '/Uandi.webp',
+  uandi: '/Uandi.webp',
 };
 
 export default function QSosModal({
@@ -46,7 +48,7 @@ export default function QSosModal({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.92, y: 20 }}
             transition={SPRING}
-            className="tactile-card w-full max-w-[480px] sm:max-w-[510px] p-5 sm:p-6 pb-6 sm:pb-7 relative z-10 rounded-2xl border-3 border-black shadow-[0_0_0_3px_#F4F4E6,0_8px_32px_rgba(0,0,0,0.9)]"
+            className="tactile-card w-full max-w-[500px] sm:max-w-[540px] p-4 sm:p-6 pb-6 sm:pb-7 relative z-10 rounded-2xl border-3 border-black shadow-[0_0_0_3px_#F4F4E6,0_8px_32px_rgba(0,0,0,0.9)] max-h-[92vh] overflow-y-auto"
           >
             {/* Header */}
             <div className="flex items-start justify-between pb-2.5 mb-3 border-b-2 border-black/80 gap-2">
@@ -54,7 +56,7 @@ export default function QSosModal({
                 <h3 className="text-base sm:text-lg font-black text-black tracking-wider uppercase flex flex-wrap items-center gap-2">
                   <span>¿Q-SOS?</span>
                   <span className="text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded bg-[#52E010] text-black border border-black shadow-[0_1px_0_#2D7A08]">
-                    ELIGE TU PERSONAJE
+                    ELIGE TU OPERADOR
                   </span>
                 </h3>
               </div>
@@ -77,11 +79,13 @@ export default function QSosModal({
               </p>
             </div>
 
-            {/* 4 Compact Player Roster Cards Grid with Background Art */}
-            <div className="grid grid-cols-2 gap-3 sm:gap-4 p-1">
-              {players.map((p) => {
+            {/* 5 Compact Player Roster Cards Grid with Background Art */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 sm:gap-3 p-1">
+              {players.map((p, idx) => {
                 const isSelected = p.id === activePlayerId;
                 const bgImage = p.avatar && p.avatar.startsWith('/') ? p.avatar : (BG_MAP[p.id] || '/vesperwing1.webp');
+                const isAegis = p.id === 'aegis' || p.id === 'uandi';
+                const isLastOdd = players.length === 5 && idx === 4;
 
                 return (
                   <motion.button
@@ -93,8 +97,12 @@ export default function QSosModal({
                       setShowModal(false);
                     }}
                     className={`relative flex flex-col items-center justify-between p-2 sm:p-2.5 rounded-xl border-2 overflow-hidden h-[125px] sm:h-[135px] cursor-pointer transition-all ${
+                      isLastOdd ? 'col-span-2 sm:col-span-1' : ''
+                    } ${
                       isSelected
                         ? 'border-black ring-3 ring-[#52E010] ring-offset-2 ring-offset-[#EAE8D4] shadow-[0_2px_0_#141414]'
+                        : isAegis
+                        ? 'border-[#FF1D25] shadow-[0_0_8px_rgba(255,29,37,0.4)]'
                         : 'border-black shadow-[0_2px_0_#141414] hover:shadow-[0_3px_0_#141414]'
                     }`}
                   >
@@ -108,10 +116,17 @@ export default function QSosModal({
                     {/* Gradient Overlay */}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/30 to-black/75" />
 
-                    {/* Name */}
-                    <span className="relative z-10 font-black text-[11px] sm:text-xs text-white uppercase tracking-wider truncate max-w-full drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">
-                      {p.name}
-                    </span>
+                    {/* Name & Role */}
+                    <div className="relative z-10 flex flex-col items-center text-center w-full min-w-0">
+                      <span className="font-black text-[11px] sm:text-xs text-white uppercase tracking-wider truncate max-w-full drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">
+                        {p.name}
+                      </span>
+                      {isAegis && (
+                        <span className="text-[7.5px] font-black px-1 rounded bg-[#FF1D25] text-white uppercase mt-0.5 tracking-wider">
+                          NUEVO // THE LAST WALL
+                        </span>
+                      )}
+                    </div>
 
                     {/* Select Badge */}
                     <div className="relative z-10 mt-auto w-full">

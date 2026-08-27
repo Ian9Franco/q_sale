@@ -2,7 +2,14 @@
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion } from 'motion/react';
-import { AppState, PlayerStatus, AvailabilityType, DiscordStatus } from './types';
+import {
+  AppState,
+  PlayerStatus,
+  AvailabilityType,
+  DiscordStatus,
+  BattlePassState,
+  BATTLE_PASS_TIERS,
+} from './types';
 import { playTacticalSound } from './utils/audio';
 
 import Header from './components/Header';
@@ -12,6 +19,26 @@ import SquadSummary from './components/SquadSummary';
 import GamesCatalog from './components/GamesCatalog';
 import PwaModal from './components/PwaModal';
 import QSosModal from './components/QSosModal';
+import BattlePassModal from './components/BattlePassModal';
+
+const DEFAULT_BP_STATE: BattlePassState = {
+  currentXP: 450,
+  level: 1,
+  claimedTiers: [],
+  claimedMissions: [],
+  equippedTitle: '',
+  equippedFrame: '',
+};
+
+function calculateLevelFromXP(xp: number): number {
+  let lvl = 1;
+  for (const tier of BATTLE_PASS_TIERS) {
+    if (xp >= tier.requiredXP) {
+      lvl = tier.tier;
+    }
+  }
+  return lvl;
+}
 
 export default function HomePage() {
   const [appState, setAppState] = useState<AppState | null>(null);
@@ -22,6 +49,7 @@ export default function HomePage() {
   const [showPwaModal, setShowPwaModal] = useState<boolean>(false);
   const [showCatalog, setShowCatalog] = useState<boolean>(false);
   const [showQSosModal, setShowQSosModal] = useState<boolean>(true);
+  const [showBattlePass, setShowBattlePass] = useState<boolean>(false);
   const [lastSyncTime, setLastSyncTime] = useState<string>('');
 
   const [isPushSubscribed, setIsPushSubscribed] = useState<boolean>(false);
@@ -35,7 +63,121 @@ export default function HomePage() {
   const [draftDiscordStatus, setDraftDiscordStatus] = useState<DiscordStatus>('in_voice');
   const [draftCustomNote, setDraftCustomNote] = useState<string>('');
 
+  // Battle Pass State
+  const [bpState, setBpState] = useState<BattlePassState>(DEFAULT_BP_STATE);
+
   const initializedRef = useRef(false);
+
+  // Load Battle Pass state & check daily bonus
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('q_sale_bp_state');
+      let currentBP = DEFAULT_BP_STATE;
+      if (saved) {
+        currentBP = JSON.parse(saved);
+      }
+      
+      // Check daily login XP
+      const todayStr = new Date().toISOString().slice(0, 10);
+      if (currentBP.lastDailyDate !== todayStr) {
+        currentBP.currentXP = (currentBP.currentXP || 0) + 200;
+        currentBP.level = calculateLevelFromXP(currentBP.currentXP);
+        currentBP.lastDailyDate = todayStr;
+      }
+
+      setBpState(currentBP);
+      localStorage.setItem('q_sale_bp_state', JSON.stringify(currentBP));
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  const addBattlePassXP = useCallback((xpGain: number) => {
+    setBpState((prev) => {
+      const newXP = prev.currentXP + xpGain;
+      const newLevel = calculateLevelFromXP(newXP);
+      if (newLevel > prev.level && soundEnabled) {
+        playTacticalSound('level_up');
+      }
+      const updated: BattlePassState = {
+        ...prev,
+        currentXP: newXP,
+        level: newLevel,
+      };
+      try {
+        localStorage.setItem('q_sale_bp_state', JSON.stringify(updated));
+      } catch {
+        // ignore
+      }
+      return updated;
+    });
+  }, [soundEnabled]);
+
+  const handleClaimTier = (tier: number) => {
+    setBpState((prev) => {
+      if (prev.claimedTiers.includes(tier)) return prev;
+      const updated: BattlePassState = {
+        ...prev,
+        claimedTiers: [...prev.claimedTiers, tier],
+      };
+      try {
+        localStorage.setItem('q_sale_bp_state', JSON.stringify(updated));
+      } catch {
+        // ignore
+      }
+      return updated;
+    });
+  };
+
+  const handleClaimMission = (missionId: string) => {
+    setBpState((prev) => {
+      if (prev.claimedMissions.includes(missionId)) return prev;
+      const mission = { id: missionId, xp: 150 };
+      const newXP = prev.currentXP + (missionId.includes('full') ? 500 : missionId.includes('aegis') ? 300 : 150);
+      const newLevel = calculateLevelFromXP(newXP);
+      if (newLevel > prev.level && soundEnabled) {
+        playTacticalSound('level_up');
+      }
+      const updated: BattlePassState = {
+        ...prev,
+        currentXP: newXP,
+        level: newLevel,
+        claimedMissions: [...prev.claimedMissions, missionId],
+      };
+      try {
+        localStorage.setItem('q_sale_bp_state', JSON.stringify(updated));
+      } catch {
+        // ignore
+      }
+      return updated;
+    });
+  };
+
+  const handleEquipTitle = (title: string) => {
+    setBpState((prev) => {
+      const updated = { ...prev, equippedTitle: title };
+      try {
+        localStorage.setItem('q_sale_bp_state', JSON.stringify(updated));
+      } catch {
+        // ignore
+      }
+      return updated;
+    });
+    if (soundEnabled) playTacticalSound('ping');
+  };
+
+  const handleEquipFrame = (frame: string) => {
+    setBpState((prev) => {
+      const updated = { ...prev, equippedFrame: frame };
+      try {
+        localStorage.setItem('q_sale_bp_state', JSON.stringify(updated));
+      } catch {
+        // ignore
+      }
+      return updated;
+    });
+    if (soundEnabled) playTacticalSound('ping');
+  };
 
   useEffect(() => {
     if (typeof window !== 'undefined' && 'serviceWorker' in navigator && 'PushManager' in window) {
@@ -113,8 +255,12 @@ export default function HomePage() {
           const prevReady = prev.players.filter((p) => p.availability === 'now').length;
           const newReady = data.players.filter((p) => p.availability === 'now').length;
           if (newReady > prevReady) {
-            if (newReady >= 5) playTacticalSound('squad_full');
-            else playTacticalSound('ready');
+            if (newReady >= 5) {
+              playTacticalSound('squad_full');
+              addBattlePassXP(500);
+            } else {
+              playTacticalSound('ready');
+            }
           }
         }
         return data;
@@ -124,39 +270,33 @@ export default function HomePage() {
     } catch {
       setIsLoading(false);
     }
-  }, [soundEnabled]);
+  }, [soundEnabled, addBattlePassXP]);
 
   const lastActivityRef = useRef<number>(Date.now());
   const isAfkRef = useRef<boolean>(false);
-  const AFK_TIMEOUT_MS = 5 * 60 * 1000; // 5 minutos sin interacción
+  const AFK_TIMEOUT_MS = 5 * 60 * 1000;
 
   useEffect(() => {
     fetchStatus();
 
     const interval = setInterval(() => {
-      // 1. Si la pestaña está oculta / minimizada, no consultar
       if (typeof document !== 'undefined' && document.hidden) return;
-
-      // 2. Si pasaron más de 5 minutos sin interacción del usuario (AFK), pausar polling
       if (Date.now() - lastActivityRef.current > AFK_TIMEOUT_MS) {
         isAfkRef.current = true;
         return;
       }
-
       fetchStatus();
-    }, 10000); // 10 segundos
+    }, 10000);
 
-    // Al detectar actividad del usuario
     const handleUserActivity = () => {
       const wasAfk = isAfkRef.current;
       lastActivityRef.current = Date.now();
       if (wasAfk) {
         isAfkRef.current = false;
-        fetchStatus(); // Refresco inmediato al volver de AFK
+        fetchStatus();
       }
     };
 
-    // Al volver a la pestaña o enfocar la ventana
     const handleVisibilityOrFocus = () => {
       if (typeof document !== 'undefined' && !document.hidden) {
         lastActivityRef.current = Date.now();
@@ -207,6 +347,7 @@ export default function HomePage() {
       setDraftDiscordStatus(p.discordStatus);
       setDraftCustomNote(p.customNote || '');
     }
+    addBattlePassXP(75);
     if (soundEnabled) playTacticalSound('ping');
   };
 
@@ -240,6 +381,13 @@ export default function HomePage() {
       gameMode: 'Ranked',
       customNote: targetNote,
     };
+
+    // Award Battle Pass XP on status update
+    if (targetAvailability === 'now') {
+      addBattlePassXP(150);
+    } else if (targetAvailability !== 'offline') {
+      addBattlePassXP(100);
+    }
 
     // Optimistic UI update
     setAppState((prev) => {
@@ -291,17 +439,20 @@ export default function HomePage() {
 
   const players = appState?.players || [];
   const readyNowPlayers = players.filter((p) => p.availability === 'now');
-  const inVoicePlayers = players.filter((p) => p.discordStatus === 'in_voice');
   const readyCount = readyNowPlayers.length;
   const maxSquad = 5;
   const isSquadFull = readyCount >= maxSquad;
   const activePlayer = players.find((p) => p.id === activePlayerId);
 
+  const hasClaimableBP = BATTLE_PASS_TIERS.some(
+    (t) => bpState.currentXP >= t.requiredXP && !bpState.claimedTiers.includes(t.tier)
+  );
+
   return (
     <main className="min-h-svh w-full flex flex-col items-center justify-start p-3 sm:p-6 pt-3 sm:pt-6 pb-32 sm:pb-40 bg-black overflow-x-hidden">
-      {/* 🎮 Retro Arcade Console Frame with Generous Padding */}
+      {/* 🎮 Retro Arcade Console Frame */}
       <div className="console-outer w-full max-w-[680px] p-4 sm:p-6 pt-5 sm:pt-6 pb-16 sm:pb-20 flex flex-col gap-4 sm:gap-5 mb-6">
-        {/* Sticky Top Header — Pins logo, badge, bell & top marquee stripe while scrolling */}
+        {/* Sticky Top Header */}
         <div className="sticky top-0 z-30 bg-black/95 backdrop-blur-md -mx-4 sm:-mx-6 px-4 sm:px-6 pt-2 pb-2 rounded-t-[24px]">
           <Header
             appState={appState}
@@ -312,12 +463,15 @@ export default function HomePage() {
             handleTogglePush={handleTogglePush}
             isSubscribingPush={isSubscribingPush}
             pushStatusMessage={pushStatusMessage}
+            bpLevel={bpState.level}
+            hasClaimableBP={hasClaimableBP}
+            onOpenBattlePass={() => setShowBattlePass(true)}
           />
         </div>
 
-        {/* Responsive Dashboard: Stacked flow on Mobile (<md), 3-Column Arcade Grid on Tablet/Desktop (md+) */}
+        {/* Responsive Dashboard */}
         <div className="flex flex-col md:grid md:grid-cols-[minmax(0,140px)_minmax(0,1.55fr)_minmax(0,150px)] gap-4 sm:gap-5 items-start w-full px-0.5">
-          {/* Col 1 on Desktop, 2nd on Mobile (Disponibilidad) */}
+          {/* Col 1: Disponibilidad */}
           <div className="order-2 md:order-1 min-w-0 w-full p-1">
             <ControlPanel
               players={players}
@@ -340,17 +494,19 @@ export default function HomePage() {
             />
           </div>
 
-          {/* Col 2 on Desktop, 1st on Mobile (Squad Status Cards - Hero) */}
+          {/* Col 2: Squad Status Cards */}
           <div className="order-1 md:order-2 min-w-0 w-full p-1">
             <SquadList
               players={players}
               activePlayerId={activePlayerId}
               maxSquad={maxSquad}
               isLoading={isLoading}
+              equippedTitle={bpState.equippedTitle}
+              equippedFrame={bpState.equippedFrame}
             />
           </div>
 
-          {/* Col 3 on Desktop, 3rd on Mobile (Squad Summary & Controls) */}
+          {/* Col 3: Squad Summary & Controls */}
           <div className="order-3 md:order-3 min-w-0 w-full p-1">
             <SquadSummary
               readyCount={readyCount}
@@ -362,6 +518,7 @@ export default function HomePage() {
               isUpdating={isUpdating}
               onOpenCatalog={() => setShowCatalog(!showCatalog)}
               onOpenPwaModal={() => setShowPwaModal(true)}
+              onOpenBattlePass={() => setShowBattlePass(true)}
             />
           </div>
         </div>
@@ -369,33 +526,32 @@ export default function HomePage() {
         {/* Games Catalog Accordion */}
         <GamesCatalog showCatalog={showCatalog} setShowCatalog={setShowCatalog} />
 
-        {/* Bottom Spacer — Guarantees that catalog button and controls are never covered by the floating dock */}
+        {/* Bottom Spacer */}
         <div className="w-full h-20 sm:h-24 flex-shrink-0 pointer-events-none" />
       </div>
 
-      {/* 🚀 Fixed Bottom Floating Arcade Bar with Animated Marquee and ¿Q-SOS? X Button */}
+      {/* 🚀 Fixed Bottom Floating Arcade Bar */}
       <div className="fixed bottom-0 left-0 right-0 z-40 flex items-center justify-center p-2.5 sm:p-4 pointer-events-none">
         <div className="w-full max-w-[680px] relative flex items-center justify-center px-4 py-2 pointer-events-auto">
-          {/* Subtle dark backdrop glass pill */}
           <div className="absolute inset-0 bg-black/85 backdrop-blur-md rounded-full border border-white/15 shadow-[0_4px_24px_rgba(0,0,0,0.9)] -z-10" />
 
           {/* Reverse animated marquee stripe */}
           <div className="w-[calc(100%-2rem)] h-1.5 sm:h-2 rainbow-stripe-animated-reverse rounded-full absolute top-1/2 -translate-y-1/2 left-4" />
 
-          {/* X button floating on top of the stripe */}
+          {/* X button */}
           <motion.button
             whileTap={{ scale: 0.88, y: 1 }}
             whileHover={{ scale: 1.08 }}
             onClick={() => setShowQSosModal(true)}
             className="relative z-10 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-black border-2 border-black shadow-[0_0_0_2px_#F4F4E6,0_2px_10px_rgba(0,0,0,0.9)] flex items-center justify-center cursor-pointer hover:bg-[#222] transition-colors"
-            title="¿Q-SOS? Elige tu personaje"
+            title="¿Q-SOS? Elige tu operador"
           >
             <span className="text-[#F4F4E6] font-black text-sm select-none">✖</span>
           </motion.button>
         </div>
       </div>
 
-      {/* ¿Q-SOS? Roster Selector Modal */}
+      {/* ¿Q-SOS? Modal */}
       <QSosModal
         showModal={showQSosModal}
         setShowModal={setShowQSosModal}
@@ -404,8 +560,21 @@ export default function HomePage() {
         onSelectUser={handleSelectUser}
       />
 
+      {/* Battle Pass Modal */}
+      <BattlePassModal
+        showModal={showBattlePass}
+        setShowModal={setShowBattlePass}
+        bpState={bpState}
+        onClaimTier={handleClaimTier}
+        onClaimMission={handleClaimMission}
+        onEquipTitle={handleEquipTitle}
+        onEquipFrame={handleEquipFrame}
+        soundEnabled={soundEnabled}
+      />
+
       {/* PWA Modal */}
       <PwaModal showPwaModal={showPwaModal} setShowPwaModal={setShowPwaModal} />
     </main>
   );
 }
+

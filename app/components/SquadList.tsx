@@ -7,6 +7,8 @@ interface SquadListProps {
   activePlayerId: string;
   maxSquad: number;
   isLoading: boolean;
+  equippedTitle?: string;
+  equippedFrame?: string;
 }
 
 const SPRING = { type: 'spring' as const, stiffness: 380, damping: 30 };
@@ -16,16 +18,24 @@ const BG_MAP: Record<string, string> = {
   chango: '/Bandit.webp',
   el_mati: '/Farsight.webp',
   volvo_milei: '/Outrider.webp',
+  aegis: '/Uandi.webp',
+  uandi: '/Uandi.webp',
 };
 
-export default function SquadList({ players, activePlayerId, isLoading }: SquadListProps) {
+export default function SquadList({
+  players,
+  activePlayerId,
+  isLoading,
+  equippedTitle,
+  equippedFrame,
+}: SquadListProps) {
   return (
     <div className="flex flex-col gap-3 w-full p-1.5">
       {/* Header Pill */}
       <div className="w-full p-0.5">
         <div className="w-full flex items-center justify-center py-2 rounded-xl bg-[#EAE8D4] border-2 border-black shadow-[0_0_0_2px_#F4F4E6,0_3px_0_2px_#141414]">
           <span className="text-xs sm:text-sm font-black uppercase tracking-widest text-black truncate px-2">
-            SQUAD STATUS
+            SQUAD STATUS (5/5 OFICIAL)
           </span>
         </div>
       </div>
@@ -33,8 +43,8 @@ export default function SquadList({ players, activePlayerId, isLoading }: SquadL
       {isLoading ? (
         <div className="text-center py-8 text-[#A0A0A0] text-xs font-black">CARGANDO SATÉLITES…</div>
       ) : (
-        /* Vertical Cards Grid (2x2 tall portrait cards) */
-        <div className="grid grid-cols-2 gap-3 sm:gap-3.5 w-full p-1">
+        /* Vertical Cards Grid */
+        <div className="grid grid-cols-2 gap-2.5 sm:gap-3.5 w-full p-1">
           {players.map((p, i) => {
             const isReady = p.availability === 'now';
             const isSoon = p.availability === 'soon';
@@ -42,6 +52,19 @@ export default function SquadList({ players, activePlayerId, isLoading }: SquadL
             const isOffline = p.availability === 'offline';
             const isUserActive = p.id === activePlayerId;
             const bgImage = p.avatar && p.avatar.startsWith('/') ? p.avatar : (BG_MAP[p.id] || '/vesperwing1.webp');
+            const isLastOddCard = players.length % 2 !== 0 && i === players.length - 1;
+
+            // Cosmetic frame styling
+            let frameClass = '';
+            if (isUserActive && equippedFrame === 'frame-neon-cyan') {
+              frameClass = 'ring-3 ring-[#00B5E2] shadow-[0_0_15px_#00B5E2]';
+            } else if (isUserActive && equippedFrame === 'frame-crimson-fury') {
+              frameClass = 'ring-3 ring-[#FF1D25] shadow-[0_0_15px_#FF1D25]';
+            } else if (isUserActive && equippedFrame === 'frame-golden-vanguard') {
+              frameClass = 'ring-3 ring-[#FFB800] shadow-[0_0_18px_#FFB800]';
+            } else if (isUserActive) {
+              frameClass = 'ring-3 ring-[#52E010] ring-offset-2 ring-offset-black';
+            }
 
             return (
               <motion.div
@@ -51,8 +74,8 @@ export default function SquadList({ players, activePlayerId, isLoading }: SquadL
                 transition={{ ...SPRING, delay: i * 0.05 }}
                 whileHover={{ y: -3, scale: 1.02 }}
                 className={`relative flex flex-col justify-between p-2.5 rounded-2xl border-2 border-black shadow-[0_0_0_2px_#F4F4E6,0_4px_0_2px_#141414] overflow-hidden min-h-[175px] sm:min-h-[195px] select-none transition-all ${
-                  isUserActive ? 'ring-3 ring-[#52E010] ring-offset-2 ring-offset-black' : ''
-                }`}
+                  isLastOddCard ? 'col-span-2 sm:col-span-1' : ''
+                } ${frameClass}`}
               >
                 {/* Character Background Image */}
                 <img
@@ -61,7 +84,7 @@ export default function SquadList({ players, activePlayerId, isLoading }: SquadL
                   className="absolute inset-0 w-full h-full object-cover object-center transform transition-transform duration-300 group-hover:scale-105"
                 />
 
-                {/* Dark Cinematic Gradient Overlay for Maximum Readability */}
+                {/* Dark Cinematic Gradient Overlay */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-black/75 pointer-events-none" />
 
                 {/* Top: Name & "TÚ" Badge */}
@@ -76,6 +99,13 @@ export default function SquadList({ players, activePlayerId, isLoading }: SquadL
                       </span>
                     )}
                   </div>
+
+                  {/* Battle Pass Equipped Title if active user */}
+                  {isUserActive && equippedTitle && (
+                    <span className="text-[8px] sm:text-[9px] font-black px-1.5 py-0.2 rounded bg-black/80 text-[#FFB800] border border-[#FFB800]/50 tracking-wider truncate shadow-sm">
+                      [{equippedTitle}]
+                    </span>
+                  )}
                 </div>
 
                 {/* Bottom: Custom Note & Status Pill Badge */}
@@ -122,3 +152,4 @@ export default function SquadList({ players, activePlayerId, isLoading }: SquadL
     </div>
   );
 }
+

@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Bell, BellOff, Check } from 'lucide-react';
+import { Bell, BellOff, Check, Award } from 'lucide-react';
 import { AppState } from '../types';
 
 interface HeaderProps {
@@ -12,6 +12,9 @@ interface HeaderProps {
   handleTogglePush: () => void;
   isSubscribingPush: boolean;
   pushStatusMessage: string;
+  bpLevel?: number;
+  hasClaimableBP?: boolean;
+  onOpenBattlePass?: () => void;
 }
 
 const SPRING_FAST = { type: 'spring' as const, stiffness: 500, damping: 36 };
@@ -22,10 +25,13 @@ export default function Header({
   handleTogglePush,
   isSubscribingPush,
   pushStatusMessage,
+  bpLevel = 1,
+  hasClaimableBP = false,
+  onOpenBattlePass,
 }: HeaderProps) {
   return (
     <div className="w-full flex flex-col gap-2.5 sm:gap-3 px-2 sm:px-3 pt-1.5 sm:pt-2">
-      <div className="flex items-center justify-between gap-2 sm:gap-4">
+      <div className="flex items-center justify-between gap-2 sm:gap-3">
         {/* Left: R6 SQUAD badge & Live info */}
         <div className="flex flex-col items-start justify-center flex-shrink-0">
           <span className="text-[9px] sm:text-[11px] font-black tracking-wider sm:tracking-widest px-2 sm:px-2.5 py-0.5 rounded-md border-2 border-black bg-[#FFB800] text-black uppercase shadow-[0_0_0_1.5px_#F4F4E6,0_2px_0_1.5px_#141414]">
@@ -42,12 +48,32 @@ export default function Header({
           <img
             src="/logo.png"
             alt="Q-SALE?"
-            className="h-10 sm:h-16 w-auto max-w-[150px] sm:max-w-[210px] object-contain cursor-pointer drop-shadow-[0_4px_16px_rgba(82,224,16,0.35)]"
+            className="h-10 sm:h-16 w-auto max-w-[140px] sm:max-w-[200px] object-contain cursor-pointer drop-shadow-[0_4px_16px_rgba(82,224,16,0.35)]"
           />
         </motion.div>
 
-        {/* Right: Only Notification Bell button */}
-        <div className="flex items-center justify-end flex-shrink-0">
+        {/* Right: Battle Pass Button & Notification Bell */}
+        <div className="flex items-center gap-1.5 sm:gap-2 justify-end flex-shrink-0">
+          {/* Battle Pass Trigger */}
+          <motion.button
+            whileTap={{ scale: 0.9 }}
+            whileHover={{ scale: 1.05 }}
+            onClick={onOpenBattlePass}
+            className={`h-8.5 sm:h-10 px-2 sm:px-2.5 flex items-center justify-center gap-1 sm:gap-1.5 rounded-xl cursor-pointer font-black text-[10px] sm:text-xs uppercase tracking-wider relative ${
+              hasClaimableBP
+                ? 'tactile-btn-green animate-pulse'
+                : 'tactile-btn-yellow'
+            }`}
+            title="Pase de Batalla Temporada 1"
+          >
+            <Award size={15} className="text-black flex-shrink-0" />
+            <span className="truncate">NV.{bpLevel}</span>
+            {hasClaimableBP && (
+              <span className="w-2.5 h-2.5 rounded-full bg-[#FF1D25] border border-white absolute -top-1 -right-1" />
+            )}
+          </motion.button>
+
+          {/* Bell button */}
           <motion.button
             whileTap={{ scale: 0.9 }}
             onClick={handleTogglePush}

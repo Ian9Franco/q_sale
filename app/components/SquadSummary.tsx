@@ -13,6 +13,7 @@ interface SquadSummaryProps {
   isUpdating: boolean;
   onOpenCatalog: () => void;
   onOpenPwaModal: () => void;
+  onOpenBattlePass?: () => void;
 }
 
 const BG_MAP: Record<string, string> = {
@@ -20,6 +21,8 @@ const BG_MAP: Record<string, string> = {
   chango: '/Bandit.webp',
   el_mati: '/Farsight.webp',
   volvo_milei: '/Outrider.webp',
+  aegis: '/Uandi.webp',
+  uandi: '/Uandi.webp',
 };
 
 export default function SquadSummary({
