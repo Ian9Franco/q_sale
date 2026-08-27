@@ -244,9 +244,9 @@ export default function HomePage() {
   const activePlayer = players.find((p) => p.id === activePlayerId);
 
   return (
-    <main className="min-h-svh w-full flex items-center justify-center p-3 sm:p-6 bg-black overflow-x-hidden">
+    <main className="min-h-svh w-full flex items-center justify-center p-3 sm:p-6 pb-16 sm:pb-20 bg-black overflow-x-hidden">
       {/* 🎮 Retro Arcade Console Frame with Generous Padding */}
-      <div className="console-outer w-full max-w-[680px] p-4 sm:p-6 pt-5 sm:pt-6 pb-4 sm:pb-5 flex flex-col gap-4 sm:gap-5">
+      <div className="console-outer w-full max-w-[680px] p-4 sm:p-6 pt-5 sm:pt-6 pb-5 sm:pb-6 flex flex-col gap-4 sm:gap-5">
         {/* Top Header (contains the 1st Marquee Stripe directly under the logo) */}
         <Header
           appState={appState}
@@ -312,16 +312,23 @@ export default function HomePage() {
 
         {/* Games Catalog Accordion */}
         <GamesCatalog showCatalog={showCatalog} setShowCatalog={setShowCatalog} />
+      </div>
 
-        {/* Bottom: ONLY ONE stripe at the bottom with the X button centered on top */}
-        <div className="relative flex items-center justify-center pt-3 pb-2">
+      {/* 🚀 Fixed Bottom Floating Arcade Bar with Animated Marquee and ¿Q-SOS? X Button */}
+      <div className="fixed bottom-0 left-0 right-0 z-40 flex items-center justify-center p-2.5 sm:p-4 pointer-events-none">
+        <div className="w-full max-w-[680px] relative flex items-center justify-center px-4 py-2 pointer-events-auto">
+          {/* Subtle dark backdrop glass pill */}
+          <div className="absolute inset-0 bg-black/85 backdrop-blur-md rounded-full border border-white/15 shadow-[0_4px_24px_rgba(0,0,0,0.9)] -z-10" />
+
           {/* Reverse animated marquee stripe */}
-          <div className="w-full h-1.5 sm:h-2 rainbow-stripe-animated-reverse rounded-full absolute top-1/2 -translate-y-1/2" />
+          <div className="w-[calc(100%-2rem)] h-1.5 sm:h-2 rainbow-stripe-animated-reverse rounded-full absolute top-1/2 -translate-y-1/2 left-4" />
+
           {/* X button floating on top of the stripe */}
           <motion.button
             whileTap={{ scale: 0.88, y: 1 }}
+            whileHover={{ scale: 1.08 }}
             onClick={() => setShowQSosModal(true)}
-            className="relative z-10 w-9 h-9 rounded-full bg-black border-2 border-black shadow-[0_0_0_2px_#F4F4E6,0_2px_8px_rgba(0,0,0,0.8)] flex items-center justify-center cursor-pointer hover:bg-[#222] transition-colors my-1"
+            className="relative z-10 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-black border-2 border-black shadow-[0_0_0_2px_#F4F4E6,0_2px_10px_rgba(0,0,0,0.9)] flex items-center justify-center cursor-pointer hover:bg-[#222] transition-colors"
             title="¿Q-SOS? Elige tu personaje"
           >
             <span className="text-[#F4F4E6] font-black text-sm select-none">✖</span>
