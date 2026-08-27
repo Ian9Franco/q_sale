@@ -1,0 +1,186 @@
+import React from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import { Zap, Clock, Calendar, ShieldOff, UserCheck } from 'lucide-react';
+import { PlayerStatus, AvailabilityType, DiscordStatus } from '../types';
+
+interface ControlPanelProps {
+  players: PlayerStatus[];
+  activePlayerId: string;
+  activePlayer: PlayerStatus | undefined;
+  handleSelectUser: (id: string) => void;
+  draftAvailability: AvailabilityType;
+  setDraftAvailability: (val: AvailabilityType) => void;
+  draftScheduledDate: string;
+  setDraftScheduledDate: (val: string) => void;
+  draftScheduledTime: string;
+  setDraftScheduledTime: (val: string) => void;
+  draftDiscordStatus: DiscordStatus;
+  setDraftDiscordStatus: (val: DiscordStatus) => void;
+  draftCustomNote: string;
+  setDraftCustomNote: (val: string) => void;
+  handleSaveStatus: (overrides?: Partial<PlayerStatus>) => void;
+  isUpdating: boolean;
+  onOpenQSosModal: () => void;
+}
+
+const availabilityOpts = [
+  { id: 'now', label: 'YA', Icon: Zap, activeClass: 'tactile-btn-green', color: '#52E010' },
+  { id: 'soon', label: '30M', Icon: Clock, activeClass: 'tactile-btn-cyan', color: '#00B5E2' },
+  { id: 'scheduled', label: 'HORA', Icon: Calendar, activeClass: 'tactile-btn-yellow', color: '#FFB800' },
+  { id: 'offline', label: 'NO', Icon: ShieldOff, activeClass: 'tactile-btn-dark ring-2 ring-[#FF1D25]', color: '#FF1D25' },
+] as const;
+
+export default function ControlPanel({
+  activePlayer,
+  draftAvailability,
+  setDraftAvailability,
+  draftScheduledDate,
+  setDraftScheduledDate,
+  draftScheduledTime,
+  setDraftScheduledTime,
+  draftCustomNote,
+  setDraftCustomNote,
+  handleSaveStatus,
+  onOpenQSosModal,
+}: ControlPanelProps) {
+  return (
+    <div className="flex flex-col gap-2 w-full p-0.5">
+      {/* Title */}
+      <div className="text-[10px] sm:text-xs font-black uppercase tracking-wider text-[#EAE8D4] text-center sm:text-left truncate">
+        DISPONIBILIDAD
+      </div>
+
+      {/* Styled Active User Pill (Click to open ¿Q-SOS?) */}
+      <motion.button
+        type="button"
+        whileTap={{ scale: 0.94, y: 1.5 }}
+        onClick={onOpenQSosModal}
+        className="w-full flex items-center justify-between bg-[#2D2D2D] text-[#F4F4E6] font-black text-[11px] sm:text-xs py-2.5 px-3 rounded-xl border-2 border-black shadow-[0_0_0_2px_#F4F4E6,0_3px_0_2px_#141414] cursor-pointer hover:bg-[#383838] transition-colors"
+        title="Cambiar quién sos"
+      >
+        <div className="flex items-center gap-2 min-w-0">
+          <UserCheck size={15} className="text-[#52E010] flex-shrink-0" />
+          <span className="truncate uppercase tracking-wider">{activePlayer?.name || 'IAN'}</span>
+        </div>
+        <span className="text-[9px] font-black px-2 py-0.5 rounded bg-[#52E010] text-black border border-black uppercase flex-shrink-0 shadow-[0_1px_0_#2D7A08]">
+          ¿SOS?
+        </span>
+      </motion.button>
+
+      {/* 2x2 Grid of Tactile Buttons */}
+      <div className="grid grid-cols-2 gap-2.5 w-full mt-1">
+        {availabilityOpts.map((opt) => {
+          const isSelected = draftAvailability === opt.id;
+
+          return (
+            <motion.button
+              key={opt.id}
+              type="button"
+              whileTap={{ scale: 0.92, y: 2 }}
+              onClick={() => {
+                setDraftAvailability(opt.id as AvailabilityType);
+                handleSaveStatus({ availability: opt.id as AvailabilityType });
+              }}
+              className={`flex flex-col items-center justify-center gap-0.5 py-2.5 sm:py-3 px-0.5 rounded-xl cursor-pointer transition-all ${
+                isSelected ? opt.activeClass : 'tactile-btn'
+              }`}
+            >
+              <opt.Icon
+                size={18}
+                className={isSelected && opt.id === 'offline' ? 'text-[#FF1D25]' : 'text-current'}
+                strokeWidth={2.6}
+              />
+              <span className="text-[10px] sm:text-xs font-black uppercase tracking-wider leading-none">
+                {opt.label}
+              </span>
+            </motion.button>
+          );
+        })}
+      </div>
+
+      {/* Scheduled Time Pickers — px-1 py-2 give box-shadows visible breathing room */}
+      <AnimatePresence>
+        {(draftAvailability === 'scheduled' || draftAvailability === 'soon') && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            style={{ overflowY: 'hidden' }}
+            className="px-1 pb-2 pt-1 mt-0.5"
+          >
+            <div className="p-3 rounded-xl bg-[#2D2D2D] border-2 border-black shadow-[0_0_0_2px_#F4F4E6,0_3px_0_2px_#141414] flex flex-col gap-2.5">
+              {draftAvailability === 'scheduled' && (
+                <div>
+                  <label className="block text-[10px] text-[#FFB800] font-black uppercase mb-1 px-0.5">Día</label>
+                  <select
+                    value={draftScheduledDate}
+                    onChange={(e) => {
+                      setDraftScheduledDate(e.target.value);
+                      handleSaveStatus({ scheduledDate: e.target.value });
+                    }}
+                    className="w-full text-xs font-black bg-[#EAE8D4] text-black rounded-lg py-1.5 px-2.5 border-2 border-black truncate shadow-[0_1px_0_#141414]"
+                  >
+                    <option value="Hoy">Hoy</option>
+                    <option value="Mañana">Mañana</option>
+                    <option value="Viernes">Viernes</option>
+                    <option value="Sábado">Sábado</option>
+                    <option value="Domingo">Domingo</option>
+                  </select>
+                </div>
+              )}
+              <div>
+                <label className="block text-[10px] text-[#00B5E2] font-black uppercase mb-1 px-0.5">Hora</label>
+                {draftAvailability === 'soon' ? (
+                  <select
+                    value={draftScheduledTime}
+                    onChange={(e) => {
+                      setDraftScheduledTime(e.target.value);
+                      handleSaveStatus({ scheduledTime: e.target.value });
+                    }}
+                    className="w-full text-xs font-black bg-[#EAE8D4] text-black rounded-lg py-1.5 px-2.5 border-2 border-black truncate shadow-[0_1px_0_#141414]"
+                  >
+                    <option value="En 15 min">En 15 min</option>
+                    <option value="En 30 min">En 30 min</option>
+                    <option value="En 45 min">En 45 min</option>
+                    <option value="En 1 hora">En 1 hora</option>
+                  </select>
+                ) : (
+                  <input
+                    type="time"
+                    value={draftScheduledTime}
+                    onChange={(e) => {
+                      setDraftScheduledTime(e.target.value);
+                      handleSaveStatus({ scheduledTime: e.target.value });
+                    }}
+                    className="w-full text-xs font-black bg-[#EAE8D4] text-black rounded-lg py-1.5 px-2.5 border-2 border-black shadow-[0_1px_0_#141414]"
+                  />
+                )}
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Bigger Retro Terminal Note Box */}
+      <div className="mt-1 w-full flex flex-col gap-1">
+        <span className="text-[9px] font-black text-[#A0A0A0] uppercase tracking-widest px-0.5">
+          NOTA / MENSAJE
+        </span>
+        <textarea
+          rows={3}
+          placeholder="Escribí una nota para el squad… (ej: ceno y entro)"
+          value={draftCustomNote}
+          onChange={(e) => setDraftCustomNote(e.target.value)}
+          onBlur={() => handleSaveStatus()}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+              e.preventDefault();
+              handleSaveStatus();
+            }
+          }}
+          className="w-full min-h-[72px] sm:min-h-[84px] text-[11px] py-2 px-2.5 rounded-xl bg-[#2D2D2D] border-2 border-black text-[#F4F4E6] placeholder:text-[#777] font-bold outline-none focus:border-[#52E010] shadow-[0_0_0_2px_#F4F4E6,0_3px_0_2px_#141414] resize-none leading-relaxed transition-all"
+        />
+      </div>
+    </div>
+  );
+}

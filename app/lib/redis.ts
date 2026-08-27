@@ -27,8 +27,8 @@ export const INITIAL_STATE: AppState = {
   players: [
     {
       id: 'ian',
-      name: 'IAN',
-      avatar: 'ash',
+      name: 'VESPERWING',
+      avatar: '/vesperwing1.webp',
       color: '#ff4757',
       availability: 'now',
       discordStatus: 'in_voice',
@@ -39,8 +39,8 @@ export const INITIAL_STATE: AppState = {
     },
     {
       id: 'chango',
-      name: 'CHANGO',
-      avatar: 'sledge',
+      name: 'BANDIT',
+      avatar: '/Bandit.webp',
       color: '#2ed573',
       availability: 'offline',
       discordStatus: 'offline',
@@ -51,8 +51,8 @@ export const INITIAL_STATE: AppState = {
     },
     {
       id: 'el_mati',
-      name: 'EL MATI',
-      avatar: 'smoke',
+      name: 'FARSIGHT',
+      avatar: '/Farsight.webp',
       color: '#1e90ff',
       availability: 'offline',
       discordStatus: 'offline',
@@ -63,8 +63,8 @@ export const INITIAL_STATE: AppState = {
     },
     {
       id: 'volvo_milei',
-      name: 'VOLVO MILEI',
-      avatar: 'jager',
+      name: 'OUTRIDER',
+      avatar: '/Outrider.webp',
       color: '#ffa502',
       availability: 'offline',
       discordStatus: 'offline',
@@ -76,6 +76,13 @@ export const INITIAL_STATE: AppState = {
   ],
 };
 
+const ARTWORK_MAP: Record<string, { name: string; avatar: string }> = {
+  ian: { name: 'VESPERWING', avatar: '/vesperwing1.webp' },
+  chango: { name: 'BANDIT', avatar: '/Bandit.webp' },
+  el_mati: { name: 'FARSIGHT', avatar: '/Farsight.webp' },
+  volvo_milei: { name: 'OUTRIDER', avatar: '/Outrider.webp' },
+};
+
 export async function getDbAppState(): Promise<AppState> {
   try {
     const client = getRedisClient();
@@ -83,6 +90,17 @@ export async function getDbAppState(): Promise<AppState> {
     if (data) {
       const parsed: AppState = JSON.parse(data);
       if (parsed.players && parsed.players.length > 0) {
+        parsed.players = parsed.players.map((p) => {
+          const map = ARTWORK_MAP[p.id];
+          if (map) {
+            return {
+              ...p,
+              name: map.name,
+              avatar: map.avatar,
+            };
+          }
+          return p;
+        });
         return parsed;
       }
     }
