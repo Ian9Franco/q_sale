@@ -126,10 +126,56 @@ export default function HomePage() {
     }
   }, [soundEnabled]);
 
+  const lastActivityRef = useRef<number>(Date.now());
+  const isAfkRef = useRef<boolean>(false);
+  const AFK_TIMEOUT_MS = 5 * 60 * 1000; // 5 minutos sin interacción
+
   useEffect(() => {
     fetchStatus();
-    const t = setInterval(fetchStatus, 4000);
-    return () => clearInterval(t);
+
+    const interval = setInterval(() => {
+      // 1. Si la pestaña está oculta / minimizada, no consultar
+      if (typeof document !== 'undefined' && document.hidden) return;
+
+      // 2. Si pasaron más de 5 minutos sin interacción del usuario (AFK), pausar polling
+      if (Date.now() - lastActivityRef.current > AFK_TIMEOUT_MS) {
+        isAfkRef.current = true;
+        return;
+      }
+
+      fetchStatus();
+    }, 10000); // 10 segundos
+
+    // Al detectar actividad del usuario
+    const handleUserActivity = () => {
+      const wasAfk = isAfkRef.current;
+      lastActivityRef.current = Date.now();
+      if (wasAfk) {
+        isAfkRef.current = false;
+        fetchStatus(); // Refresco inmediato al volver de AFK
+      }
+    };
+
+    // Al volver a la pestaña o enfocar la ventana
+    const handleVisibilityOrFocus = () => {
+      if (typeof document !== 'undefined' && !document.hidden) {
+        lastActivityRef.current = Date.now();
+        isAfkRef.current = false;
+        fetchStatus();
+      }
+    };
+
+    const events = ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll'];
+    events.forEach((event) => window.addEventListener(event, handleUserActivity, { passive: true }));
+    window.addEventListener('focus', handleVisibilityOrFocus);
+    document.addEventListener('visibilitychange', handleVisibilityOrFocus);
+
+    return () => {
+      clearInterval(interval);
+      events.forEach((event) => window.removeEventListener(event, handleUserActivity));
+      window.removeEventListener('focus', handleVisibilityOrFocus);
+      document.removeEventListener('visibilitychange', handleVisibilityOrFocus);
+    };
   }, [fetchStatus]);
 
   useEffect(() => {
