@@ -21,7 +21,7 @@ export default function HomePage() {
   const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
   const [showPwaModal, setShowPwaModal] = useState<boolean>(false);
   const [showCatalog, setShowCatalog] = useState<boolean>(false);
-  const [showQSosModal, setShowQSosModal] = useState<boolean>(false);
+  const [showQSosModal, setShowQSosModal] = useState<boolean>(true);
   const [lastSyncTime, setLastSyncTime] = useState<string>('');
 
   const [isPushSubscribed, setIsPushSubscribed] = useState<boolean>(false);
