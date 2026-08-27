@@ -60,11 +60,11 @@ export const GAMES_CATALOG: GameInfo[] = [
     name: 'Dota 2',
     shortName: 'Dota 2',
     tagline: 'MOBA 5v5 - Clasificación no oficial del grupo',
-    accentColor: '#e74c3c',
+    accentColor: '#FF1D25',
     maxSquad: 5,
     availableModes: ['Ranked 🏆', 'Turbo ⚡', 'All Pick ⚔️'],
     statusBadge: 'unclassified',
-    badgeLabel: 'DESCLASIFICADO ⚠️',
+    badgeLabel: 'JAMÁS 🚫',
     isSelectable: false,
   },
   {

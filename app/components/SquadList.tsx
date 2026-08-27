@@ -64,12 +64,12 @@ export default function SquadList({ players, activePlayerId, isLoading }: SquadL
 
                 {/* Top: Name & "TÚ" Badge */}
                 <div className="relative z-10 flex flex-col items-center justify-center text-center gap-0.5 w-full">
-                  <div className="flex items-center justify-center gap-1.5 w-full px-0.5 min-w-0">
-                    <span className="font-black text-[11px] sm:text-xs text-white uppercase tracking-wider truncate drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">
+                  <div className="flex items-center justify-center gap-1.5 w-full px-1 min-w-0">
+                    <span className="font-black text-xs sm:text-sm text-white uppercase tracking-wider truncate drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">
                       {p.name}
                     </span>
                     {isUserActive && (
-                      <span className="text-[8px] sm:text-[9px] font-black px-1.5 py-0.5 rounded bg-black text-[#52E010] border border-[#52E010] leading-none flex-shrink-0 shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
+                      <span className="text-[9px] sm:text-[10px] font-black px-1.5 py-0.5 rounded bg-black text-[#52E010] border border-[#52E010] leading-none flex-shrink-0 shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
                         TÚ
                       </span>
                     )}

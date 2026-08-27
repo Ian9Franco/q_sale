@@ -1,13 +1,12 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { Zap, Radio, Download } from 'lucide-react';
+import { Zap, Download } from 'lucide-react';
 import { PlayerStatus } from '../types';
 
 interface SquadSummaryProps {
   readyCount: number;
   players: PlayerStatus[];
   readyNowPlayers: PlayerStatus[];
-  inVoicePlayers: PlayerStatus[];
   isSquadFull: boolean;
   maxSquad: number;
   handleQuickReady: () => void;
@@ -26,7 +25,6 @@ const BG_MAP: Record<string, string> = {
 export default function SquadSummary({
   readyCount,
   readyNowPlayers,
-  inVoicePlayers,
   maxSquad,
   handleQuickReady,
   isUpdating,
@@ -47,8 +45,8 @@ export default function SquadSummary({
         </span>
       </div>
 
-      {/* 2-Column Slot Grid (#1 to #5) */}
-      <div className="grid grid-cols-2 gap-1.5 sm:gap-2 w-full">
+      {/* Slot Grid: 5 slots in 1 horizontal row on mobile, 2 columns on desktop */}
+      <div className="grid grid-cols-5 md:grid-cols-2 gap-1.5 sm:gap-2 w-full">
         {[0, 1, 2, 3, 4].map((idx) => {
           const player = readyNowPlayers[idx];
           const filled = !!player;
@@ -57,7 +55,7 @@ export default function SquadSummary({
           return (
             <div
               key={idx}
-              className={`h-13 sm:h-16 rounded-xl flex flex-col items-center justify-center p-1 text-center relative overflow-hidden transition-all ${
+              className={`h-14 sm:h-16 rounded-xl flex flex-col items-center justify-center p-1 text-center relative overflow-hidden transition-all ${
                 filled
                   ? 'border-2 border-black shadow-[0_0_0_2px_#52E010,0_3px_0_2px_#2D7A08]'
                   : 'bg-[#2D2D2D] border-2 border-black shadow-[0_0_0_1.5px_#444,inset_0_2px_4px_rgba(0,0,0,0.6)] text-[#888]'
@@ -82,24 +80,6 @@ export default function SquadSummary({
             </div>
           );
         })}
-      </div>
-
-      {/* Discord Info Card with proper height and padding */}
-      <div className="tactile-card p-2 sm:p-2.5 flex flex-col gap-1 w-full min-w-0 overflow-hidden text-left">
-        <div className="flex items-center gap-1 text-[10px] sm:text-xs font-black text-black leading-tight">
-          <Radio size={13} className="text-[#0045D8] stroke-[2.5] flex-shrink-0" />
-          <span className="truncate">Discord Info</span>
-        </div>
-        {inVoicePlayers.length > 0 ? (
-          <div className="text-[9px] sm:text-[10px] font-bold text-[#222] leading-tight overflow-hidden">
-            <span className="text-[#666] block text-[8px] uppercase font-black">En voz:</span>
-            <span className="text-black uppercase font-black truncate block mt-0.5">
-              {inVoicePlayers.map((p) => p.name).join(', ')}
-            </span>
-          </div>
-        ) : (
-          <span className="text-[9px] text-[#666] font-bold">Nadie en voz</span>
-        )}
       </div>
 
       {/* Controls & Action Buttons */}

@@ -67,8 +67,8 @@ export default function ControlPanel({
         </span>
       </motion.button>
 
-      {/* 2x2 Grid of Tactile Buttons */}
-      <div className="grid grid-cols-2 gap-2.5 w-full mt-1">
+      {/* Availability Buttons: 4 in a row on mobile, 2x2 grid on desktop */}
+      <div className="grid grid-cols-4 md:grid-cols-2 gap-2 sm:gap-2.5 w-full mt-1">
         {availabilityOpts.map((opt) => {
           const isSelected = draftAvailability === opt.id;
 
@@ -81,7 +81,7 @@ export default function ControlPanel({
                 setDraftAvailability(opt.id as AvailabilityType);
                 handleSaveStatus({ availability: opt.id as AvailabilityType });
               }}
-              className={`flex flex-col items-center justify-center gap-0.5 py-2.5 sm:py-3 px-0.5 rounded-xl cursor-pointer transition-all ${
+              className={`flex flex-col items-center justify-center gap-1 py-2.5 sm:py-3 px-1 rounded-xl cursor-pointer transition-all ${
                 isSelected ? opt.activeClass : 'tactile-btn'
               }`}
             >

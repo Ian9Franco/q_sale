@@ -259,10 +259,10 @@ export default function HomePage() {
           pushStatusMessage={pushStatusMessage}
         />
 
-        {/* 3-Column Arcade Dashboard with generous column spacing */}
-        <div className="grid grid-cols-[minmax(0,110px)_minmax(0,1.35fr)_minmax(0,118px)] sm:grid-cols-[minmax(0,138px)_minmax(0,1.55fr)_minmax(0,148px)] gap-3 sm:gap-5 items-start w-full">
-          {/* Col 1 */}
-          <div className="min-w-0 w-full py-1">
+        {/* Responsive Dashboard: Stacked flow on Mobile (<md), 3-Column Arcade Grid on Tablet/Desktop (md+) */}
+        <div className="flex flex-col md:grid md:grid-cols-[minmax(0,140px)_minmax(0,1.55fr)_minmax(0,150px)] gap-4 sm:gap-5 items-start w-full">
+          {/* Col 1 on Desktop, 2nd on Mobile (Disponibilidad) */}
+          <div className="order-2 md:order-1 min-w-0 w-full py-0.5">
             <ControlPanel
               players={players}
               activePlayerId={activePlayerId}
@@ -284,8 +284,8 @@ export default function HomePage() {
             />
           </div>
 
-          {/* Col 2 */}
-          <div className="min-w-0 w-full py-1">
+          {/* Col 2 on Desktop, 1st on Mobile (Squad Status Cards - Hero) */}
+          <div className="order-1 md:order-2 min-w-0 w-full py-0.5">
             <SquadList
               players={players}
               activePlayerId={activePlayerId}
@@ -294,13 +294,12 @@ export default function HomePage() {
             />
           </div>
 
-          {/* Col 3 */}
-          <div className="min-w-0 w-full py-1">
+          {/* Col 3 on Desktop, 3rd on Mobile (Squad Summary & Controls) */}
+          <div className="order-3 md:order-3 min-w-0 w-full py-0.5">
             <SquadSummary
               readyCount={readyCount}
               players={players}
               readyNowPlayers={readyNowPlayers}
-              inVoicePlayers={inVoicePlayers}
               isSquadFull={isSquadFull}
               maxSquad={maxSquad}
               handleQuickReady={handleQuickReady}

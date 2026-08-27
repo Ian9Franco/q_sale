@@ -35,9 +35,11 @@ export default function GamesCatalog({ showCatalog }: GamesCatalogProps) {
                 <div className="text-[9px] font-semibold text-[#444]">{g.tagline}</div>
               </div>
               <span
-                className={`text-[9px] font-black px-2 py-0.5 rounded-full border border-black uppercase ${
-                  g.statusBadge === 'active'
-                    ? 'bg-[#52E010] text-black shadow-[0_1px_0_#2D7A08]'
+                className={`text-[9px] font-black px-2.5 py-0.5 rounded-full border-2 border-black uppercase tracking-wider ${
+                  g.id === 'dota_2'
+                    ? 'bg-[#FF1D25] text-white shadow-[0_1.5px_0_#990000]'
+                    : g.statusBadge === 'active'
+                    ? 'bg-[#52E010] text-black shadow-[0_1.5px_0_#2D7A08]'
                     : 'bg-black/10 text-black'
                 }`}
               >
