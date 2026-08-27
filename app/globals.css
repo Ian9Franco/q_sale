@@ -53,8 +53,6 @@ body {
     inset 0 4px 12px rgba(255, 255, 255, 0.08),
     0 16px 48px rgba(0, 0, 0, 0.95);
   position: relative;
-  /* clip the stripe edges to the rounded corners */
-  overflow: hidden;
 }
 
 /* Logo-style Double Outline Tactile Cards */

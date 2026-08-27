@@ -247,17 +247,19 @@ export default function HomePage() {
     <main className="min-h-svh w-full flex items-center justify-center p-3 sm:p-6 pb-16 sm:pb-20 bg-black overflow-x-hidden">
       {/* 🎮 Retro Arcade Console Frame with Generous Padding */}
       <div className="console-outer w-full max-w-[680px] p-4 sm:p-6 pt-5 sm:pt-6 pb-5 sm:pb-6 flex flex-col gap-4 sm:gap-5">
-        {/* Top Header (contains the 1st Marquee Stripe directly under the logo) */}
-        <Header
-          appState={appState}
-          lastSyncTime={lastSyncTime}
-          soundEnabled={soundEnabled}
-          setSoundEnabled={setSoundEnabled}
-          isPushSubscribed={isPushSubscribed}
-          handleTogglePush={handleTogglePush}
-          isSubscribingPush={isSubscribingPush}
-          pushStatusMessage={pushStatusMessage}
-        />
+        {/* Sticky Top Header — Pins logo, badge, bell & top marquee stripe while scrolling */}
+        <div className="sticky top-0 z-30 bg-black/95 backdrop-blur-md -mx-4 sm:-mx-6 px-4 sm:px-6 pt-2 pb-2 rounded-t-[24px]">
+          <Header
+            appState={appState}
+            lastSyncTime={lastSyncTime}
+            soundEnabled={soundEnabled}
+            setSoundEnabled={setSoundEnabled}
+            isPushSubscribed={isPushSubscribed}
+            handleTogglePush={handleTogglePush}
+            isSubscribingPush={isSubscribingPush}
+            pushStatusMessage={pushStatusMessage}
+          />
+        </div>
 
         {/* Responsive Dashboard: Stacked flow on Mobile (<md), 3-Column Arcade Grid on Tablet/Desktop (md+) */}
         <div className="flex flex-col md:grid md:grid-cols-[minmax(0,140px)_minmax(0,1.55fr)_minmax(0,150px)] gap-4 sm:gap-5 items-start w-full px-0.5">
