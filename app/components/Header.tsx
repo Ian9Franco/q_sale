@@ -24,10 +24,10 @@ export default function Header({
   pushStatusMessage,
 }: HeaderProps) {
   return (
-    <div className="w-full flex flex-col gap-2.5 sm:gap-3 p-1">
-      <div className="flex items-center justify-between gap-2 sm:gap-4 px-1 py-0.5">
+    <div className="w-full flex flex-col gap-2.5 sm:gap-3 px-2 sm:px-3 pt-1.5 sm:pt-2">
+      <div className="flex items-center justify-between gap-2 sm:gap-4">
         {/* Left: R6 SQUAD badge & Live info */}
-        <div className="flex flex-col items-start justify-center flex-shrink-0 p-0.5">
+        <div className="flex flex-col items-start justify-center flex-shrink-0">
           <span className="text-[9px] sm:text-[11px] font-black tracking-wider sm:tracking-widest px-2 sm:px-2.5 py-0.5 rounded-md border-2 border-black bg-[#FFB800] text-black uppercase shadow-[0_0_0_1.5px_#F4F4E6,0_2px_0_1.5px_#141414]">
             R6 SQUAD
           </span>

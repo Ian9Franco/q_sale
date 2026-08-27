@@ -246,7 +246,7 @@ export default function HomePage() {
   return (
     <main className="min-h-svh w-full flex items-center justify-center p-3 sm:p-6 bg-black overflow-x-hidden">
       {/* 🎮 Retro Arcade Console Frame with Generous Padding */}
-      <div className="console-outer w-full max-w-[680px] p-4 sm:p-6 flex flex-col gap-4 sm:gap-5">
+      <div className="console-outer w-full max-w-[680px] p-4 sm:p-6 pt-5 sm:pt-6 pb-4 sm:pb-5 flex flex-col gap-4 sm:gap-5">
         {/* Top Header (contains the 1st Marquee Stripe directly under the logo) */}
         <Header
           appState={appState}
