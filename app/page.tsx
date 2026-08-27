@@ -164,7 +164,10 @@ export default function HomePage() {
     if (soundEnabled) playTacticalSound('ping');
   };
 
-  const handleSaveStatus = async (overrides?: Partial<PlayerStatus>) => {
+  const handleSaveStatus = async (
+    overrides?: Partial<PlayerStatus>,
+    options?: { sendNotification?: boolean }
+  ) => {
     if (!activePlayerId || !appState) return;
     setIsUpdating(true);
 
@@ -175,6 +178,11 @@ export default function HomePage() {
       (targetAvailability === 'scheduled' || targetAvailability === 'soon' ? draftScheduledTime : undefined);
     const targetDate = overrides?.scheduledDate ?? (targetAvailability === 'scheduled' ? draftScheduledDate : undefined);
     const targetNote = overrides?.customNote ?? draftCustomNote;
+
+    const shouldSendNotification =
+      options?.sendNotification !== undefined
+        ? options.sendNotification
+        : targetAvailability !== 'offline';
 
     const payload: Partial<PlayerStatus> & { id: string } = {
       id: activePlayerId,
@@ -216,7 +224,7 @@ export default function HomePage() {
       const res = await fetch('/api/status', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'update_player', player: payload, sendNotification: true }),
+        body: JSON.stringify({ action: 'update_player', player: payload, sendNotification: shouldSendNotification }),
       });
       const data = await res.json();
       if (data.state) {
@@ -232,7 +240,7 @@ export default function HomePage() {
   const handleQuickReady = () => {
     setDraftAvailability('now');
     setDraftDiscordStatus('in_voice');
-    handleSaveStatus({ availability: 'now', discordStatus: 'in_voice' });
+    handleSaveStatus({ availability: 'now', discordStatus: 'in_voice' }, { sendNotification: true });
   };
 
   const players = appState?.players || [];
@@ -244,9 +252,9 @@ export default function HomePage() {
   const activePlayer = players.find((p) => p.id === activePlayerId);
 
   return (
-    <main className="min-h-svh w-full flex items-center justify-center p-3 sm:p-6 pb-16 sm:pb-20 bg-black overflow-x-hidden">
+    <main className="min-h-svh w-full flex flex-col items-center justify-start p-3 sm:p-6 pt-3 sm:pt-6 pb-32 sm:pb-40 bg-black overflow-x-hidden">
       {/* 🎮 Retro Arcade Console Frame with Generous Padding */}
-      <div className="console-outer w-full max-w-[680px] p-4 sm:p-6 pt-5 sm:pt-6 pb-5 sm:pb-6 flex flex-col gap-4 sm:gap-5">
+      <div className="console-outer w-full max-w-[680px] p-4 sm:p-6 pt-5 sm:pt-6 pb-16 sm:pb-20 flex flex-col gap-4 sm:gap-5 mb-6">
         {/* Sticky Top Header — Pins logo, badge, bell & top marquee stripe while scrolling */}
         <div className="sticky top-0 z-30 bg-black/95 backdrop-blur-md -mx-4 sm:-mx-6 px-4 sm:px-6 pt-2 pb-2 rounded-t-[24px]">
           <Header
@@ -314,6 +322,9 @@ export default function HomePage() {
 
         {/* Games Catalog Accordion */}
         <GamesCatalog showCatalog={showCatalog} setShowCatalog={setShowCatalog} />
+
+        {/* Bottom Spacer — Guarantees that catalog button and controls are never covered by the floating dock */}
+        <div className="w-full h-20 sm:h-24 flex-shrink-0 pointer-events-none" />
       </div>
 
       {/* 🚀 Fixed Bottom Floating Arcade Bar with Animated Marquee and ¿Q-SOS? X Button */}

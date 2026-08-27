@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Zap, Clock, Calendar, ShieldOff, UserCheck } from 'lucide-react';
+import { Zap, Clock, Calendar, ShieldOff, UserCheck, Send } from 'lucide-react';
 import { PlayerStatus, AvailabilityType, DiscordStatus } from '../types';
 
 interface ControlPanelProps {
@@ -18,7 +18,7 @@ interface ControlPanelProps {
   setDraftDiscordStatus: (val: DiscordStatus) => void;
   draftCustomNote: string;
   setDraftCustomNote: (val: string) => void;
-  handleSaveStatus: (overrides?: Partial<PlayerStatus>) => void;
+  handleSaveStatus: (overrides?: Partial<PlayerStatus>, options?: { sendNotification?: boolean }) => void;
   isUpdating: boolean;
   onOpenQSosModal: () => void;
 }
@@ -41,6 +41,7 @@ export default function ControlPanel({
   draftCustomNote,
   setDraftCustomNote,
   handleSaveStatus,
+  isUpdating,
   onOpenQSosModal,
 }: ControlPanelProps) {
   return (
@@ -81,7 +82,6 @@ export default function ControlPanel({
               whileTap={{ scale: 0.92, y: 2 }}
               onClick={() => {
                 setDraftAvailability(opt.id as AvailabilityType);
-                handleSaveStatus({ availability: opt.id as AvailabilityType });
               }}
               className={`flex flex-col items-center justify-center gap-1 py-2.5 sm:py-3 px-1 rounded-xl cursor-pointer transition-all ${
                 isSelected ? opt.activeClass : 'tactile-btn'
@@ -116,10 +116,7 @@ export default function ControlPanel({
                   <label className="block text-[10px] text-[#FFB800] font-black uppercase mb-1 px-0.5">Día</label>
                   <select
                     value={draftScheduledDate}
-                    onChange={(e) => {
-                      setDraftScheduledDate(e.target.value);
-                      handleSaveStatus({ scheduledDate: e.target.value });
-                    }}
+                    onChange={(e) => setDraftScheduledDate(e.target.value)}
                     className="w-full text-xs font-black bg-[#EAE8D4] text-black rounded-lg py-1.5 px-2.5 border-2 border-black truncate shadow-[0_1px_0_#141414]"
                   >
                     <option value="Hoy">Hoy</option>
@@ -135,10 +132,7 @@ export default function ControlPanel({
                 {draftAvailability === 'soon' ? (
                   <select
                     value={draftScheduledTime}
-                    onChange={(e) => {
-                      setDraftScheduledTime(e.target.value);
-                      handleSaveStatus({ scheduledTime: e.target.value });
-                    }}
+                    onChange={(e) => setDraftScheduledTime(e.target.value)}
                     className="w-full text-xs font-black bg-[#EAE8D4] text-black rounded-lg py-1.5 px-2.5 border-2 border-black truncate shadow-[0_1px_0_#141414]"
                   >
                     <option value="En 15 min">En 15 min</option>
@@ -150,10 +144,7 @@ export default function ControlPanel({
                   <input
                     type="time"
                     value={draftScheduledTime}
-                    onChange={(e) => {
-                      setDraftScheduledTime(e.target.value);
-                      handleSaveStatus({ scheduledTime: e.target.value });
-                    }}
+                    onChange={(e) => setDraftScheduledTime(e.target.value)}
                     className="w-full text-xs font-black bg-[#EAE8D4] text-black rounded-lg py-1.5 px-2.5 border-2 border-black shadow-[0_1px_0_#141414]"
                   />
                 )}
@@ -169,19 +160,50 @@ export default function ControlPanel({
           NOTA / MENSAJE
         </span>
         <textarea
-          rows={3}
+          rows={2}
           placeholder="Escribí una nota para el squad… (ej: ceno y entro)"
           value={draftCustomNote}
           onChange={(e) => setDraftCustomNote(e.target.value)}
-          onBlur={() => handleSaveStatus()}
           onKeyDown={(e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
               e.preventDefault();
-              handleSaveStatus();
+              handleSaveStatus(undefined, { sendNotification: draftAvailability !== 'offline' });
             }
           }}
-          className="w-full min-h-[72px] sm:min-h-[84px] text-[11px] py-2 px-2.5 rounded-xl bg-[#2D2D2D] border-2 border-black text-[#F4F4E6] placeholder:text-[#777] font-bold outline-none focus:border-[#52E010] shadow-[0_0_0_2px_#F4F4E6,0_3px_0_2px_#141414] resize-none leading-relaxed transition-all"
+          className="w-full min-h-[60px] sm:min-h-[70px] text-[11px] py-2 px-2.5 rounded-xl bg-[#2D2D2D] border-2 border-black text-[#F4F4E6] placeholder:text-[#777] font-bold outline-none focus:border-[#52E010] shadow-[0_0_0_2px_#F4F4E6,0_3px_0_2px_#141414] resize-none leading-relaxed transition-all"
         />
+      </div>
+
+      {/* Explicit Send / Confirm Status Button */}
+      <div className="mt-1 w-full p-0.5">
+        <motion.button
+          type="button"
+          whileTap={{ scale: 0.94, y: 2 }}
+          onClick={() => handleSaveStatus(undefined, { sendNotification: draftAvailability !== 'offline' })}
+          disabled={isUpdating}
+          className={`w-full py-2.5 sm:py-3 px-2 rounded-xl font-black text-[11px] sm:text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 cursor-pointer transition-all shadow-md ${
+            draftAvailability === 'offline'
+              ? 'tactile-btn-dark ring-2 ring-[#FF1D25]'
+              : draftAvailability === 'now'
+              ? 'tactile-btn-green'
+              : draftAvailability === 'soon'
+              ? 'tactile-btn-cyan'
+              : 'tactile-btn-yellow'
+          }`}
+        >
+          <Send size={14} className="flex-shrink-0" />
+          <span className="truncate">
+            {isUpdating
+              ? 'GUARDANDO…'
+              : draftAvailability === 'offline'
+              ? 'OFFLINE'
+              : draftAvailability === 'now'
+              ? 'ENVIAR'
+              : draftAvailability === 'soon'
+              ? `ENVIAR: ${draftScheduledTime || 'EN 15 MIN'}`
+              : `ENVIAR: ${draftScheduledDate || 'HOY'} ${draftScheduledTime || '22:00'}`}
+          </span>
+        </motion.button>
       </div>
     </div>
   );

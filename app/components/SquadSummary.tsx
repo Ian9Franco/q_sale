@@ -41,7 +41,7 @@ export default function SquadSummary({
           <span className="text-[#52E010] text-xs sm:text-sm font-black ml-0.5 tracking-wider">LISTOS</span>
         </div>
         <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-[#EAE8D4] mt-1 whitespace-nowrap">
-          EN PARTIDA AHORA
+          Dale que llueve
         </span>
       </div>
 
@@ -83,9 +83,9 @@ export default function SquadSummary({
       </div>
 
       {/* Controls & Action Buttons */}
-      <div className="flex flex-col gap-2 w-full mt-0.5">
+      <div className="flex flex-col gap-2 w-full mt-0.5 pb-6 sm:pb-8">
         <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-[#EAE8D4]">
-          CONTROLS
+          CON-TROLO
         </span>
 
         {/* Big Green CTA Button */}

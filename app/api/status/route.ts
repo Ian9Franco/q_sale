@@ -49,8 +49,8 @@ export async function POST(request: Request) {
       currentState.lastUpdated = now;
       await saveDbAppState(currentState);
 
-      // Trigger Web Push Notification if player marked active/available
-      if (body.sendNotification !== false) {
+      // Trigger Web Push Notification if player marked active/available (NEVER on offline)
+      if (body.sendNotification !== false && updatedPlayer.availability !== 'offline') {
         let pushTitle = '¿Qué Sale? - R6 Squad 🎯';
         let pushBody = '';
 
@@ -61,7 +61,7 @@ export async function POST(request: Request) {
             pushBody = `🟢 ${finalPlayerName} está disponible YA para jugar.`;
           }
         } else if (updatedPlayer.availability === 'soon') {
-          pushBody = `⏳ ${finalPlayerName} entra en 15-30 min.`;
+          pushBody = `⏳ ${finalPlayerName} entra ${updatedPlayer.scheduledTime ? (updatedPlayer.scheduledTime.toLowerCase().startsWith('en') ? updatedPlayer.scheduledTime : `en ${updatedPlayer.scheduledTime}`) : 'en 15-30 min'}.`;
         } else if (updatedPlayer.availability === 'scheduled') {
           pushBody = `🕒 ${finalPlayerName} avisó que juega ${updatedPlayer.scheduledDate || 'Hoy'} a las ${updatedPlayer.scheduledTime || '22:00'}.`;
         }

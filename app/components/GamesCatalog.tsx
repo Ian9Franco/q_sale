@@ -18,9 +18,9 @@ export default function GamesCatalog({ showCatalog }: GamesCatalogProps) {
           animate={{ opacity: 1, height: 'auto' }}
           exit={{ opacity: 0, height: 0 }}
           transition={SPRING}
-          className="overflow-hidden flex flex-col gap-1.5 pt-2 border-t-2 border-[#1E1E1E]"
+          className="overflow-hidden flex flex-col gap-2 pt-3 pb-8 sm:pb-12 border-t-2 border-[#1E1E1E]"
         >
-          <div className="text-[10px] font-black uppercase text-[#A0A0A0] tracking-wider mb-1">
+          <div className="text-[10px] font-black uppercase text-[#A0A0A0] tracking-wider mb-1 px-1">
             CATÁLOGO DISPONIBLE
           </div>
           {GAMES_CATALOG.map((g) => (
